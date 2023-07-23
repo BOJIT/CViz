@@ -64,7 +64,7 @@
     {items}
 />
 
-<h1>Placeholder</h1>
+<h1>This is the app</h1>
 
 {#if import.meta.env.VITE_SHOW_UNSTABLE === "true"}
     <!-- Beta Banner -->
