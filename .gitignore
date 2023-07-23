@@ -1,0 +1,16 @@
+.DS_Store
+node_modules
+/build
+/.svelte-kit
+/package
+.env
+.env.*
+!.env.development
+!.env.production
+!.env.staging
+vite.config.js.timestamp-*
+vite.config.ts.timestamp-*
+
+.vscode/svelte.code-snippets
+.vscode/javascript.code-snippets
+.vscode/settings.json
