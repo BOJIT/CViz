@@ -29,8 +29,11 @@
         if (import.meta.env.VITE_BROWSER_CHECK === "false") resolve();
 
         // Check browser compatibility
-        // TODO add Filesystem API check here
-        resolve();
+        if ("showDirectoryPicker" in window) {
+            resolve();
+        } else {
+            reject("Filesystem Access API not supported in your browser!");
+        }
     }
 
     /*------------------------------- Lifecycle ------------------------------*/

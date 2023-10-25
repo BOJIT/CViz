@@ -64,7 +64,7 @@
     {items}
 />
 
-<h1>This is the app</h1>
+<h1>Work in Progress!</h1>
 
 {#if import.meta.env.VITE_SHOW_UNSTABLE === "true"}
     <!-- Beta Banner -->
@@ -76,16 +76,6 @@
 <style>
     :global(.app) {
         height: 100vh !important;
-    }
-
-    .interface {
-        position: relative;
-        width: 100%;
-        flex-grow: 2;
-
-        display: flex;
-        flex-direction: column;
-        overflow: hidden;
     }
 
     .beta {
