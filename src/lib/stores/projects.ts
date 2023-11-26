@@ -1,7 +1,7 @@
 /**
- * @file overlays.ts
+ * @file projects.ts
  * @author James Bennion-Pedley
- * @brief Share app-wide overlay state
+ * @brief Store of accessible project handles (Filesystem Access API)
  * @date 07/02/2023
  *
  * @copyright Copyright (c) 2023
@@ -14,16 +14,14 @@ import { writable, type Writable } from "svelte/store";
 
 /*--------------------------------- State ------------------------------------*/
 
-const themeOverlay: Writable<boolean> = writable(false);
-const settingsOverlay: Writable<boolean> = writable(false);
-const projectOverlay: Writable<boolean> = writable(false);
+const store: Writable<string[]> = writable([]);
+
+const activeProject: Writable<string | null> = writable(null);
 
 /*------------------------------- Functions ----------------------------------*/
 
 /*-------------------------------- Exports -----------------------------------*/
 
-export {
-    themeOverlay,
-    settingsOverlay,
-    projectOverlay,
-};
+export default store;
+
+export { activeProject };

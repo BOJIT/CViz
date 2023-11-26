@@ -18,15 +18,17 @@
     import { Settings } from "@svicons/ionicons-outline";
 
     import logo from "$lib/assets/img/Logo.png";
+    import ProjectDialog from "$lib/components/dialogs/ProjectDialog.svelte";
+    import GraphView from "$lib/components/GraphView.svelte";
+
+    // TEMP
+    import data from "$lib/components/data";
 
     // Stores
-    import { settingsOverlay } from "$lib/stores/overlays";
-
-    import settings from "$lib/stores/settings";
+    import { projectOverlay, settingsOverlay } from "$lib/stores/overlays";
+    import projects from "$lib/stores/projects";
 
     /*--------------------------------- Props --------------------------------*/
-
-    let hideTooltips: boolean = true;
 
     let items: NavItem[] = [
         {
@@ -46,8 +48,10 @@
     /*------------------------------- Lifecycle ------------------------------*/
 
     onMount(async () => {
-        // Initialise local storage databases
-        await settings.init();
+        // TEMP
+        $projectOverlay = true;
+
+        $projects = ["test project", "another list"];
     });
 </script>
 
@@ -64,7 +68,10 @@
     {items}
 />
 
-<h1>Work in Progress!</h1>
+<!-- Interface here, active if there is a currently accessible project -->
+<GraphView graph={data} />
+
+<ProjectDialog bind:visible={$projectOverlay} />
 
 {#if import.meta.env.VITE_SHOW_UNSTABLE === "true"}
     <!-- Beta Banner -->

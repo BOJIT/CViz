@@ -14,10 +14,12 @@
     import "@fontsource/jetbrains-mono";
 
     import { App, Notification } from "@bojit/svelte-components/core";
-    import { palette } from "@bojit/svelte-components/theme";
+    import { palette, mode as themeMode } from "@bojit/svelte-components/theme";
     import { ThemeSelector } from "@bojit/svelte-components/widgets";
 
     import { themeOverlay } from "$lib/stores/overlays";
+    import settings from "$lib/stores/settings";
+    import { onMount } from "svelte";
 
     /*--------------------------------- Props --------------------------------*/
 
@@ -37,6 +39,17 @@
     }
 
     /*------------------------------- Lifecycle ------------------------------*/
+
+    onMount(async () => {
+        // Initialise local storage databases
+        await settings.init();
+
+        // Update settings store when theme changes
+        $themeMode = $settings.theme;
+        themeMode.subscribe((t) => {
+            $settings.theme = t;
+        });
+    });
 </script>
 
 <App theme={palette.midnight} load={loadCheck}>
