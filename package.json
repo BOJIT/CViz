@@ -8,12 +8,14 @@
         "build-staging": "vite build --mode staging",
         "preview": "vite preview",
         "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
-        "check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch"
+        "check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
+        "tauri": "tauri"
     },
     "devDependencies": {
         "@sveltejs/adapter-auto": "^2.0.0",
-        "@sveltejs/adapter-cloudflare": "^2.0.1",
+        "@sveltejs/adapter-static": "^2.0.3",
         "@sveltejs/kit": "^1.5.0",
+        "@tauri-apps/cli": "^1.5.6",
         "@types/wicg-file-system-access": "^2023.10.4",
         "git-rev-sync": "^3.0.2",
         "mdsvex": "^0.10.6",

@@ -1,4 +1,4 @@
-import adapter from '@sveltejs/adapter-cloudflare';
+import adapter from '@sveltejs/adapter-static';
 import { mdsvex } from "mdsvex";
 import { vitePreprocess } from '@sveltejs/kit/vite';
 
