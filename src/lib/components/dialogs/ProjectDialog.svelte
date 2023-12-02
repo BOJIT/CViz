@@ -21,7 +21,12 @@
 
     import { Document, FolderOpen, Trash } from "@svicons/ionicons-outline";
 
-    import projects from "$lib/stores/projects";
+    import projects, {
+        activeProject,
+        type ProjectStore,
+    } from "$lib/stores/projects";
+
+    import { pickDirectory } from "$lib/utils/commands";
 
     /*--------------------------------- Props --------------------------------*/
 
@@ -31,10 +36,11 @@
 
     /*-------------------------------- Methods -------------------------------*/
 
-    function listTransform(list: string[]) {
+    function listTransform(p: ProjectStore) {
         const dict: any = {};
-        list.forEach((l) => {
-            dict[l] = { icon: Document };
+        Object.entries(p).forEach(([key, value]) => {
+            // TODO add custom project icons
+            dict[value.shortName] = { icon: Document, description: key };
         });
 
         return dict;
@@ -50,38 +56,33 @@
 </script>
 
 <!-- TODO put in base dialogue -->
-<BaseDialog bind:visible persistent icon={FolderOpen} title="Open Project">
-    <SearchableList
-        bind:this={searchableList}
-        items={listTransform($projects)}
-        buttons={[Trash]}
-        on:select={(s) => {
-            setTimeout(async () => {
-                // Create template config file if it doesn't exist
+<BaseDialog
+    bind:visible
+    persistent={Object.keys($projects).length === 0}
+    icon={FolderOpen}
+    title="Open Project"
+>
+    {#if Object.keys($projects).length}
+        <SearchableList
+            bind:this={searchableList}
+            items={listTransform($projects)}
+            buttons={[Trash]}
+            on:select={(s) => {
+                setTimeout(async () => {
+                    console.log(s.detail);
+                    $activeProject = projects.find(s.detail);
 
-                // Set current project store (TODO workout file-watcher approach)
-
-                // if ((await patch.open(s.detail)) === false) {
-                //     message.push({
-                //         type: "error",
-                //         title: "File Error",
-                //         message: "Could not open file!",
-                //         timeout: 5,
-                //     });
-
-                //     return;
-                // }
-
-                visible = false;
-            }, 200);
-        }}
-        on:button={async (e) => {
-            if (e.detail.index === 0) {
-                // TODO prompt whether to keep the `cviz.config.yaml` file
-                // Remove from filesystem access API
-            }
-        }}
-    />
+                    visible = false;
+                }, 200);
+            }}
+            on:button={async (e) => {
+                if (e.detail.index === 0) {
+                    // TODO prompt whether to keep the `cviz.config.yaml` file
+                    // Remove from filesystem access API
+                }
+            }}
+        />
+    {/if}
 
     <br />
     <div style="padding-left: 0.3rem">
@@ -92,11 +93,28 @@
             outlined
             color={$theme === "dark" ? "white" : "primary"}
             on:click={async () => {
-                const dir = await window.showDirectoryPicker();
+                const dir = await pickDirectory();
 
-                console.log(dir);
+                if (dir === "") {
+                    message.push({
+                        type: "error",
+                        title: "Invalid Project",
+                        message: "No directory selected",
+                    });
+                    return;
+                }
 
-                // Set active project on success
+                // Add directory and set active project on success
+                if (projects.add(dir) === true) {
+                    message.push({
+                        type: "warning",
+                        title: "Duplicate Project",
+                        message: "This project already exists",
+                    });
+                }
+
+                $activeProject = dir;
+                visible = false;
             }}
         />
     </div>

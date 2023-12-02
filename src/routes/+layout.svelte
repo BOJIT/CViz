@@ -19,6 +19,7 @@
 
     import { themeOverlay } from "$lib/stores/overlays";
     import settings from "$lib/stores/settings";
+    import projects from "$lib/stores/projects";
     import { onMount } from "svelte";
 
     /*--------------------------------- Props --------------------------------*/
@@ -30,12 +31,13 @@
         // If in development deployment, bypass checks
         if (import.meta.env.VITE_BROWSER_CHECK === "false") resolve();
 
+        resolve(); // Note: browser checks not required for Tauri build
         // Check browser compatibility
-        if ("showDirectoryPicker" in window) {
-            resolve();
-        } else {
-            reject("Filesystem Access API not supported in your browser!");
-        }
+        // if ("showDirectoryPicker" in window) {
+        //     resolve();
+        // } else {
+        //     reject("Filesystem Access API not supported in your browser!");
+        // }
     }
 
     /*------------------------------- Lifecycle ------------------------------*/
@@ -43,6 +45,7 @@
     onMount(async () => {
         // Initialise local storage databases
         await settings.init();
+        await projects.init();
 
         // Update settings store when theme changes
         $themeMode = $settings.theme;

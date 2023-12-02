@@ -15,18 +15,19 @@
 
     import { NavBar, type NavItem } from "@bojit/svelte-components/layout";
 
-    import { Settings } from "@svicons/ionicons-outline";
+    import { FolderOpen, Settings } from "@svicons/ionicons-outline";
 
     import logo from "$lib/assets/img/Logo.png";
-    import ProjectDialog from "$lib/components/dialogs/ProjectDialog.svelte";
+    import GraphOverlay from "$lib/components/GraphOverlay.svelte";
     import GraphView from "$lib/components/GraphView.svelte";
+    import ProjectDialog from "$lib/components/dialogs/ProjectDialog.svelte";
 
     // TEMP
     import data from "$lib/components/data";
 
     // Stores
     import { projectOverlay, settingsOverlay } from "$lib/stores/overlays";
-    import projects from "$lib/stores/projects";
+    import projects, { activeProject } from "$lib/stores/projects";
 
     /*--------------------------------- Props --------------------------------*/
 
@@ -34,8 +35,18 @@
         {
             type: "button",
             color: "transparent",
+            icon: FolderOpen,
+            label: "Open Project",
+            visibility: "desktop",
+            callback: () => {
+                $projectOverlay = true;
+            },
+        },
+        {
+            type: "button",
+            color: "transparent",
             icon: Settings,
-            label: "[⌘ + ' ]",
+            label: "Settings",
             visibility: "desktop",
             callback: () => {
                 $settingsOverlay = true;
@@ -48,10 +59,7 @@
     /*------------------------------- Lifecycle ------------------------------*/
 
     onMount(async () => {
-        // TEMP
-        $projectOverlay = true;
-
-        $projects = ["test project", "another list"];
+        if ($activeProject === null) $projectOverlay = true;
     });
 </script>
 
@@ -69,7 +77,15 @@
 />
 
 <!-- Interface here, active if there is a currently accessible project -->
-<GraphView graph={data} />
+
+{#if $activeProject !== null}
+    <div class="graph-container">
+        <GraphView graph={data} />
+        <div class="graph-overlay">
+            <GraphOverlay />
+        </div>
+    </div>
+{/if}
 
 <ProjectDialog bind:visible={$projectOverlay} />
 
@@ -85,6 +101,21 @@
         height: 100vh !important;
     }
 
+    .graph-container {
+        width: 100%;
+        height: 100%;
+        position: relative;
+    }
+
+    .graph-overlay {
+        position: absolute;
+        top: 0px;
+        bottom: 0px;
+        left: 0px;
+        right: 0px;
+    }
+
+    /* Banner for development release */
     .beta {
         position: fixed;
         text-align: center;
