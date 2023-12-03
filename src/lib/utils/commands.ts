@@ -25,6 +25,11 @@ async function pickDirectory(): Promise<string> {
     return await invoke('pick_directory');
 }
 
+async function initialiseTreeWatcher(root: string): Promise<boolean> {
+    // TODO destroy old instances if multiple active?
+    return await invoke('initialise_tree_watcher', { root: root });
+}
+
 /*-------------------------------- Exports -----------------------------------*/
 
-export { pickDirectory };
+export { pickDirectory, initialiseTreeWatcher };

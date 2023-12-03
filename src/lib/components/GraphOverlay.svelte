@@ -32,5 +32,8 @@
 
         display: grid;
         place-items: center;
+
+        /* TODO remove eventually */
+        pointer-events: none;
     }
 </style>

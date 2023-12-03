@@ -14,6 +14,8 @@ import { writable, type Writable } from "svelte/store";
 
 import localForage from "localforage";
 
+import { initialiseTreeWatcher } from "$lib/utils/commands";
+
 /*--------------------------------- Types ------------------------------------*/
 
 type ProjectEntry = {
@@ -49,6 +51,12 @@ async function init(): Promise<Writable<ProjectStore>> {
     /* Local storage is subscribed to store updates */
     store.subscribe(async (val: ProjectStore) => {
         await localStore.setItem("projects", val);
+    });
+
+    // Active project changes trigger a tree watcher re-initialisation
+    activeProject.subscribe(async (val: string | null) => {
+        if (val === null) return;
+        await initialiseTreeWatcher(val);
     });
 
     return store;
@@ -103,7 +111,6 @@ export default {
     init,
     reset,
     add,
-    find,
     remove,
 };
 
