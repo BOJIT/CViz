@@ -67,15 +67,11 @@ function add(root: string): boolean {
             keyExists = true;
 
         // TODO deal with Windows paths
+        let shortName = root.substring(root.lastIndexOf('/') + 1);
 
-        let nameCandidate = root.substring(root.lastIndexOf('/') + 1);
-        let duplicateKeys = Object.entries(s).filter(([k, v]) => v.shortName === nameCandidate);
-
-        console.log(duplicateKeys);
 
         s[root] = {
-            // TODO ensure that shortName doesn't clash with any other keys
-            shortName: nameCandidate,
+            shortName: shortName,
         };
         return s;
     });
@@ -83,12 +79,19 @@ function add(root: string): boolean {
     return keyExists;
 }
 
-function find(shortName: string): string | null {
-    return null;
-}
+function remove(root: string): boolean {
+    let keyExists = false;
 
-function remove(shortName: string) {
+    store.update((s) => {
+        if (s[root] !== undefined)
+            keyExists = true;
 
+        delete s[root];
+
+        return s;
+    });
+
+    return keyExists;
 }
 
 /*-------------------------------- Exports -----------------------------------*/

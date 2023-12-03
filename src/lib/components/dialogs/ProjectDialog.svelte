@@ -40,7 +40,11 @@
         const dict: any = {};
         Object.entries(p).forEach(([key, value]) => {
             // TODO add custom project icons
-            dict[value.shortName] = { icon: Document, description: key };
+            dict[key] = {
+                icon: Document,
+                description: key,
+                searchKey: value.shortName,
+            };
         });
 
         return dict;
@@ -68,17 +72,17 @@
             items={listTransform($projects)}
             buttons={[Trash]}
             on:select={(s) => {
-                setTimeout(async () => {
-                    console.log(s.detail);
-                    $activeProject = projects.find(s.detail);
+                $activeProject = s.detail;
 
-                    visible = false;
-                }, 200);
+                visible = false;
             }}
             on:button={async (e) => {
                 if (e.detail.index === 0) {
+                    // Close project if active
+                    if ($activeProject === e.detail.key) $activeProject = null;
+
                     // TODO prompt whether to keep the `cviz.config.yaml` file
-                    // Remove from filesystem access API
+                    projects.remove(e.detail.key);
                 }
             }}
         />
