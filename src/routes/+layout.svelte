@@ -11,6 +11,8 @@
 <script lang="ts">
     /*-------------------------------- Imports -------------------------------*/
 
+    import { onMount } from "svelte";
+
     import "@fontsource/jetbrains-mono";
 
     import { App, Notification } from "@bojit/svelte-components/core";
@@ -20,7 +22,7 @@
     import { themeOverlay } from "$lib/stores/overlays";
     import settings from "$lib/stores/settings";
     import projects from "$lib/stores/projects";
-    import { onMount } from "svelte";
+    import events from "$lib/utils/events";
 
     /*--------------------------------- Props --------------------------------*/
 
@@ -43,6 +45,9 @@
     /*------------------------------- Lifecycle ------------------------------*/
 
     onMount(async () => {
+        // Set up listeners for Tauri events
+        await events.init();
+
         // Initialise local storage databases
         await settings.init();
         await projects.init();

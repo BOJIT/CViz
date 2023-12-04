@@ -19,4 +19,8 @@ pub mod utils {
 
         paths
     }
+
+    pub fn handle_directory_change(root: &str, path: &str) {
+        //
+    }
 }
