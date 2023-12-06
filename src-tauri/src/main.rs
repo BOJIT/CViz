@@ -4,6 +4,7 @@
 /* ----------------------------- Std/Cargo modules -------------------------- */
 
 use native_dialog::FileDialog;
+use notify::{RecursiveMode, Watcher};
 use std::collections::HashMap;
 use tauri::Manager;
 
@@ -21,10 +22,13 @@ struct UINotification {
     timeout: u32,
 }
 
-/* ----------------------------------- State -------------------------------- */
+// App State (Ephemeral)
+struct AppState {
+    directory_watcher: Option<notify::RecommendedWatcher>,
+    file_tree: HashMap<String, u32>,
+}
 
-// Global application state (ephemeral)
-static WATCHER_TREE: Option<HashMap<u32, u32>> = None;
+struct AppStateMutable(std::sync::Mutex<AppState>);
 
 /* ------------------------------- Tauri Commands --------------------------- */
 
@@ -51,18 +55,58 @@ fn pick_directory() -> String {
 }
 
 #[tauri::command]
-fn initialise_tree_watcher(app_handle: tauri::AppHandle, root: &str) {
-    // Kill existing watchers
-
+fn initialise_tree_watcher(
+    app_handle: tauri::AppHandle,
+    state: tauri::State<'_, AppStateMutable>,
+    root: &str,
+) {
     // Add global watcher for added/deleted files
+    {
+        let mut mutable_state = state.0.lock().unwrap();
+
+        // Drop last watcher
+        match mutable_state.directory_watcher {
+            Some(_) => {
+                mutable_state.directory_watcher = None;
+            }
+            None => (),
+        }
+
+        // Assign new watcher
+        let watcher = notify::recommended_watcher(parse_file::utils::handle_directory_change);
+
+        match watcher {
+            Ok(mut w) => {
+                let _ = w.watch(std::path::Path::new(root), RecursiveMode::Recursive);
+                mutable_state.directory_watcher = Some(w);
+            }
+            Err(_) => (), // TODO send watcher warning?
+        }
+    }
 
     // TODO handle glob ignore patterns
 
     let sources = parse_file::utils::match_files(root, &vec!["c", "cpp", "cxx", "cc", "c++"]);
     let headers = parse_file::utils::match_files(root, &vec!["h", "hpp", "hh", "h++"]);
 
-    println!("sources:\n {:?} \n", sources);
-    println!("headers:\n {:?} \n", headers);
+    {
+        // let mut mutable_state = state.0.lock().unwrap();
+
+        // for s in sources {
+        // let mut watcher = notify::recommended_watcher(|res| match res {
+        //     Ok(event) => println!("event: {:?}", event),
+        //     Err(e) => println!("watch error: {:?}", e),
+        // });
+
+        // mutable_state.file_watchers.insert(s, watcher);
+        // }
+        // for h in headers {
+        //     mutable_state.file_watchers.insert(h, 42);
+        // }
+    }
+
+    // println!("sources:\n {:?} \n", sources);
+    // println!("headers:\n {:?} \n", headers);
 
     // show_webview_dialog(
     //     app_handle,
@@ -90,12 +134,17 @@ fn main() {
 
     // Launch application
     tauri::Builder::default()
+        .manage(AppStateMutable(
+            AppState {
+                directory_watcher: None,
+                file_tree: HashMap::new(),
+            }
+            .into(),
+        ))
         .invoke_handler(tauri::generate_handler![
             pick_directory,
             initialise_tree_watcher
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
-
-    // handler.join().unwrap();
 }
