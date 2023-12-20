@@ -68,10 +68,10 @@ pub mod utils {
                         ));
                     }
 
-                    return ipc::FileChangeset::Renamed(
+                    return ipc::FileChangeset::Renamed((
                         String::from(event.paths[0].to_str().unwrap()),
                         String::from(event.paths[1].to_str().unwrap()),
-                    );
+                    ));
                 }
 
                 // File has been re-modified. Re-tokenize

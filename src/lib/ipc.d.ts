@@ -14,19 +14,16 @@
 
 /*--------------------------------- Types ------------------------------------*/
 
-export type FileMetadata = {
+export type FileChangeset = {
+    type: "removed" | "renamed" | "added" | "modified",
     key: string,
 }
 
-export type FileChangeset = {
-    change_type: "removed" | "renamed" | "added" | "modified",
-}
-
 export type UINotification = {
-    msg_type: "info" | "warning" | "error",
+    type: "info" | "warning" | "error",
     title: string,
     message: string,
-    timeout: number,
+    timeout?: number,
 };
 
 /*-------------------------------- Exports -----------------------------------*/

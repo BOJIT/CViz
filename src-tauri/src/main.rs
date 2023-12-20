@@ -77,17 +77,6 @@ fn initialise_tree_watcher(
                 _ => {
                     // Send FileChangesets as JSON
                     app_handle.emit_all("file-changeset", changeset).unwrap();
-                    app_handle
-                        .emit_all(
-                            "ui-notify",
-                            ipc::UINotification {
-                                msg_type: ipc::UINotificationType::Info,
-                                title: "test".to_string(),
-                                message: "test".to_string(),
-                                timeout: None,
-                            },
-                        )
-                        .unwrap();
                 }
             }
         });

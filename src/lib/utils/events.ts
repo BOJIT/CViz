@@ -13,7 +13,7 @@
 import { message } from "@bojit/svelte-components/core";
 import { listen, type Event, type UnlistenFn } from '@tauri-apps/api/event'
 
-import type { UINotification } from "$lib/ipc";
+import type { FileChangeset, UINotification } from "$lib/ipc";
 
 /*--------------------------------- State ------------------------------------*/
 
@@ -21,21 +21,16 @@ const handles: UnlistenFn[] = [];
 
 /*------------------------------- Functions ----------------------------------*/
 
-function handleFileChangeset(event: Event<any>) {
+function handleFileChangeset(event: Event<FileChangeset>) {
     console.log(event);
 }
 
 function handleUINotify(event: Event<UINotification>) {
-    message.push({
-        type: event.payload.msg_type,
-        title: event.payload.title,
-        message: event.payload.message,
-        timeout: event.payload.timeout,
-    });
+    message.push(structuredClone(event.payload));
 }
 
 async function init() {
-    handles.push(await listen<any>("file-changeset", handleFileChangeset));
+    handles.push(await listen<FileChangeset>("file-changeset", handleFileChangeset));
     handles.push(await listen<UINotification>("ui-notify", handleUINotify));
 }
 
