@@ -55,6 +55,21 @@ fn initialise_tree_watcher(
     state: tauri::State<'_, AppStateMutable>,
     root: &str,
 ) {
+    // TODO handle glob ignore patterns
+
+    // Fetch changesets initially for all C/C++ files
+    let files = parse_file::utils::match_files(
+        root,
+        &vec!["c", "cpp", "cxx", "cc", "c++", "h", "hpp", "hh", "h++"],
+    );
+
+    for f in files.iter() {
+        let metadata = parse_file::utils::parse_symbols(f);
+        app_handle
+            .emit_all("file-changeset", ipc::FileChangeset::Added(metadata))
+            .unwrap();
+    }
+
     // Add global watcher for added/deleted files
     {
         let mut mutable_state = state.0.lock().unwrap();
@@ -75,7 +90,6 @@ fn initialise_tree_watcher(
                 ipc::FileChangeset::NoEvent => return,
 
                 _ => {
-                    // Send FileChangesets as JSON
                     app_handle.emit_all("file-changeset", changeset).unwrap();
                 }
             }
@@ -89,12 +103,6 @@ fn initialise_tree_watcher(
             Err(_) => (), // TODO send watcher warning?
         }
     }
-
-    // TODO handle glob ignore patterns
-
-    // Fetch changesets initially for all C/C++ files
-    let sources = parse_file::utils::match_files(root, &vec!["c", "cpp", "cxx", "cc", "c++"]);
-    let headers = parse_file::utils::match_files(root, &vec!["h", "hpp", "hh", "h++"]);
 }
 
 /* -------------------------------- Tauri Events ---------------------------- */

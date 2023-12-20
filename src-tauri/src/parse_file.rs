@@ -27,7 +27,7 @@ pub mod utils {
 
     pub fn parse_symbols(path: &str) -> ipc::FileMetdadata {
         return ipc::FileMetdadata {
-            key: String::from("test"),
+            key: String::from(path),
         };
     }
 
