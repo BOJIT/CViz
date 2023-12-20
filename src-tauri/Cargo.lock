@@ -541,6 +541,7 @@ dependencies = [
  "glob",
  "native-dialog",
  "notify",
+ "regex",
  "serde",
  "serde_json",
  "serde_with",

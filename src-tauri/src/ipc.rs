@@ -22,6 +22,7 @@ pub enum UINotification {
 #[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
 pub struct FileMetdadata {
     pub key: String,
+    pub includes: Vec<String>,
 }
 
 #[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]

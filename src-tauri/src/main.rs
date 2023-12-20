@@ -64,10 +64,15 @@ fn initialise_tree_watcher(
     );
 
     for f in files.iter() {
-        let metadata = parse_file::utils::parse_symbols(f);
-        app_handle
-            .emit_all("file-changeset", ipc::FileChangeset::Added(metadata))
-            .unwrap();
+        let meta = parse_file::utils::parse_symbols(f);
+        match meta {
+            Some(m) => {
+                app_handle
+                    .emit_all("file-changeset", ipc::FileChangeset::Added(m))
+                    .unwrap();
+            }
+            None => (),
+        };
     }
 
     // Add global watcher for added/deleted files
