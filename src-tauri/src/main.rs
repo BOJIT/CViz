@@ -7,24 +7,19 @@ use native_dialog::FileDialog;
 use notify::{RecursiveMode, Watcher};
 use std::collections::HashMap;
 use tauri::Manager;
+use tokio::sync::mpsc;
 
 // Local Modules
 mod config_tree;
+mod ipc;
 mod parse_file;
 
 /* ----------------------------------- Types -------------------------------- */
 
-#[derive(Clone, serde::Serialize)]
-struct UINotification {
-    msg_type: String,
-    title: String,
-    message: String,
-    timeout: u32,
-}
-
 // App State (Ephemeral)
 struct AppState {
     directory_watcher: Option<notify::RecommendedWatcher>,
+    directory_channel: (mpsc::Sender<String>, mpsc::Receiver<String>),
     file_tree: HashMap<String, u32>,
 }
 
@@ -73,7 +68,29 @@ fn initialise_tree_watcher(
         }
 
         // Assign new watcher
-        let watcher = notify::recommended_watcher(parse_file::utils::handle_directory_change);
+        let watcher = notify::recommended_watcher(move |res| {
+            let changeset = parse_file::utils::handle_directory_change(res);
+
+            match changeset {
+                ipc::FileChangeset::NoEvent => return,
+
+                _ => {
+                    // Send FileChangesets as JSON
+                    app_handle.emit_all("file-changeset", changeset).unwrap();
+                    app_handle
+                        .emit_all(
+                            "ui-notify",
+                            ipc::UINotification {
+                                msg_type: ipc::UINotificationType::Info,
+                                title: "test".to_string(),
+                                message: "test".to_string(),
+                                timeout: None,
+                            },
+                        )
+                        .unwrap();
+                }
+            }
+        });
 
         match watcher {
             Ok(mut w) => {
@@ -86,57 +103,46 @@ fn initialise_tree_watcher(
 
     // TODO handle glob ignore patterns
 
+    // Fetch changesets initially for all C/C++ files
     let sources = parse_file::utils::match_files(root, &vec!["c", "cpp", "cxx", "cc", "c++"]);
     let headers = parse_file::utils::match_files(root, &vec!["h", "hpp", "hh", "h++"]);
-
-    {
-        // let mut mutable_state = state.0.lock().unwrap();
-
-        // for s in sources {
-        // let mut watcher = notify::recommended_watcher(|res| match res {
-        //     Ok(event) => println!("event: {:?}", event),
-        //     Err(e) => println!("watch error: {:?}", e),
-        // });
-
-        // mutable_state.file_watchers.insert(s, watcher);
-        // }
-        // for h in headers {
-        //     mutable_state.file_watchers.insert(h, 42);
-        // }
-    }
-
-    // println!("sources:\n {:?} \n", sources);
-    // println!("headers:\n {:?} \n", headers);
-
-    // show_webview_dialog(
-    //     app_handle,
-    //     &UINotification {
-    //         msg_type: "warning".to_string(),
-    //         title: "FS warning".to_string(),
-    //         message: "max inotify limit reached!".to_string(),
-    //         timeout: 0,
-    //     },
-    // );
 }
 
 /* -------------------------------- Tauri Events ---------------------------- */
 
-fn show_webview_dialog(app_handle: tauri::AppHandle, message: &UINotification) {
+fn show_webview_dialog(app_handle: tauri::AppHandle, message: &ipc::UINotification) {
     app_handle.emit_all("ui-notify", message).unwrap();
 }
 
-// fn app_
+fn send_watcher_event<R: tauri::Runtime>(message: String, manager: &impl Manager<R>) {
+    manager.emit_all("rs2js", message).unwrap();
+}
 
 /* ----------------------------------- Entry -------------------------------- */
 
+async fn async_process(
+    mut input_rx: mpsc::Receiver<String>,
+    output_tx: mpsc::Sender<String>,
+) -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+    while let Some(input) = input_rx.recv().await {
+        let output = input;
+        output_tx.send(output).await?;
+    }
+
+    Ok(())
+}
+
 fn main() {
     // Heap allocations of lifetime objects
+    let (_async_proc_input_tx, async_proc_input_rx) = mpsc::channel(1);
+    let (async_proc_output_tx, mut async_proc_output_rx) = mpsc::channel(1);
 
     // Launch application
     tauri::Builder::default()
         .manage(AppStateMutable(
             AppState {
                 directory_watcher: None,
+                directory_channel: mpsc::channel(1),
                 file_tree: HashMap::new(),
             }
             .into(),
@@ -145,6 +151,25 @@ fn main() {
             pick_directory,
             initialise_tree_watcher
         ])
+        .setup(|app| {
+            let app_handle = app.handle();
+
+            // Launch separate async process for handling file events
+            tauri::async_runtime::spawn(async move {
+                async_process(async_proc_input_rx, async_proc_output_tx).await
+            });
+
+            // Forward async events to Tauri webview
+            tauri::async_runtime::spawn(async move {
+                loop {
+                    if let Some(output) = async_proc_output_rx.recv().await {
+                        send_watcher_event(output, &app_handle);
+                    }
+                }
+            });
+
+            Ok(())
+        })
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
