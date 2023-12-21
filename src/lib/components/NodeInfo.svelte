@@ -26,8 +26,11 @@
     .container {
         width: 100%;
         height: 100%;
+        pointer-events: all;
 
         display: grid;
         place-items: center;
+
+        background-color: #1d1d1df1;
     }
 </style>

@@ -30,23 +30,25 @@
         <Splitpanes horizontal theme="no-splitter">
             <Pane>
                 <Splitpanes>
-                    <Pane snapSize={10} size={30}>
+                    <Pane snapSize={10} size={30} maxSize={40}>
                         <SourceTree />
                     </Pane>
 
-                    <Pane>
-                        <div class="graph-window">
-                            <h2>{$project[$activeProject].shortName}</h2>
-                        </div>
-                    </Pane>
+                    <Pane minSize={30} />
 
-                    <Pane snapSize={10} size={30}>
+                    <Pane snapSize={10} size={30} maxSize={40}>
                         <NodeInfo />
                     </Pane>
                 </Splitpanes>
             </Pane>
 
-            <Pane size={6} minSize={6} maxSize={6}>Statusbar</Pane>
+            <Pane size={6} minSize={6} maxSize={6}>
+                <div class="statusbar">
+                    <h5 class="project-name">
+                        {$project[$activeProject].shortName}
+                    </h5>
+                </div>
+            </Pane>
         </Splitpanes>
     </div>
 {/if}
@@ -54,15 +56,20 @@
 <style>
     .panes :global(.splitpanes__pane) {
         background-color: transparent !important;
+
+        pointer-events: none;
     }
 
     .panes :global(.splitpanes__splitter) {
         background-color: #525252 !important;
         border-left: #646464 !important;
         border-top: #646464 !important;
+
+        pointer-events: all;
     }
 
     .panes {
+        pointer-events: none;
         height: 100%;
 
         position: relative;
@@ -70,11 +77,13 @@
         place-items: center;
     }
 
-    .graph-window {
+    .statusbar {
         height: 100%;
+        background-color: rgba(37, 49, 42, 0.952);
+    }
 
-        position: relative;
-        display: grid;
-        place-items: center;
+    .project-name {
+        padding: 0.5rem;
+        font-family: var(--font-monospace);
     }
 </style>
