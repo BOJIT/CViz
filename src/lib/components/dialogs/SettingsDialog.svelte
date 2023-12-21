@@ -21,7 +21,6 @@
     import {
         CheckmarkCircle,
         CloseCircle,
-        CloudDownload,
         Contrast,
         Moon,
         Settings,

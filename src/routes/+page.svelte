@@ -20,6 +20,7 @@
     import logo from "$lib/assets/img/Logo.png";
     import GraphOverlay from "$lib/components/GraphOverlay.svelte";
     import GraphView from "$lib/components/GraphView.svelte";
+    import KeyBindings from "$lib/components/KeyBindings.svelte";
     import ProjectDialog from "$lib/components/dialogs/ProjectDialog.svelte";
     import SettingsDialog from "$lib/components/dialogs/SettingsDialog.svelte";
 
@@ -94,6 +95,8 @@
         <h6>This is a beta release! Beware of breaking changes!</h6>
     </div>
 {/if}
+
+<KeyBindings />
 
 <style>
     :global(.app) {

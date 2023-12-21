@@ -26,9 +26,7 @@ export type TreeStore = {
 
 /*--------------------------------- State ------------------------------------*/
 
-const DEFAULT = {};
-
-const store: Writable<TreeStore> = writable(structuredClone(DEFAULT));
+const store: Writable<TreeStore> = writable({});
 
 /*------------------------------- Functions ----------------------------------*/
 
@@ -38,7 +36,7 @@ async function init(): Promise<Writable<TreeStore>> {
 }
 
 function reset(): void {
-    store.set(DEFAULT);
+    store.set({});
 }
 
 function applyChangeset(cs: FileChangeset) {
