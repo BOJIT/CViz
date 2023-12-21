@@ -100,7 +100,7 @@
 
     .graph-container {
         width: 100%;
-        height: 100%;
+        height: calc(100vh - 3.8rem);
         position: relative;
     }
 

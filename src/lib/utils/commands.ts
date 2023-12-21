@@ -23,6 +23,7 @@ async function pickDirectory(): Promise<string> {
 }
 
 async function initialiseTreeWatcher(root: string): Promise<boolean> {
+    console.log("Re-watch tree: ", root);
     // Clear out the old tree
     tree.reset();
 

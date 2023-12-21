@@ -32,6 +32,9 @@
         SimulationLinkDatum,
     } from "d3-force";
 
+    // TEMP
+    import graph from "./data";
+
     /*--------------------------------- Types --------------------------------*/
 
     interface Node extends SimulationNodeDatum {
@@ -65,7 +68,8 @@
     let svg: SVGElement;
     let width = 500;
     let height = 600;
-    const nodeRadius = 5;
+    const nodeRadius = 6;
+    let container: HTMLDivElement;
 
     const colourScale = d3.scaleOrdinal(d3.schemeCategory10);
 
@@ -124,23 +128,24 @@
 
     /*------------------------------- Lifecycle ------------------------------*/
 
-    // $: links = graph.links.map((d) => Object.create(d));
-    // $: nodes = graph.nodes.map((d) => Object.create(d));
+    $: links = graph.links.map((d) => Object.create(d));
+    $: nodes = graph.nodes.map((d) => Object.create(d));
 
     // Map store to graph nodes and edges
     tree.subscribe((t) => {
-        // nodes = Object.entries(t).map((n) => {
+        // let test = Object.entries(t).map((n) => {
         //     return {
         //         id: n[0],
         //         group: 1,
         //     };
         // });
-        // simulationUpdate();
-        // console.log(t);
-        // console.log(nodes);
     });
 
     onMount(() => {
+        // Initial scale
+        width = container.offsetWidth;
+        height = container.offsetHeight;
+
         simulation = d3
             .forceSimulation(nodes)
             .force(
@@ -173,34 +178,36 @@
 <svelte:window on:resize={resize} />
 
 <!-- SVG was here -->
-<svg bind:this={svg} {width} {height}>
-    {#each links as link}
-        <g stroke="#999" stroke-opacity="0.6">
-            <line
-                x1={link.source.x}
-                y1={link.source.y}
-                x2={link.target.x}
-                y2={link.target.y}
+<div class="container" bind:this={container}>
+    <svg bind:this={svg} {width} {height}>
+        {#each links as link}
+            <g stroke="#999" stroke-opacity="0.6">
+                <line
+                    x1={link.source.x}
+                    y1={link.source.y}
+                    x2={link.target.x}
+                    y2={link.target.y}
+                    transform="translate({transform.x} {transform.y}) scale({transform.k} {transform.k})"
+                >
+                    <title>{link.source.id}</title>
+                </line>
+            </g>
+        {/each}
+
+        {#each nodes as point}
+            <circle
+                class="node"
+                r={nodeRadius}
+                fill={colourScale(point.group.toString())}
+                cx={point.x}
+                cy={point.y}
                 transform="translate({transform.x} {transform.y}) scale({transform.k} {transform.k})"
             >
-                <title>{link.source.id}</title>
-            </line>
-        </g>
-    {/each}
-
-    {#each nodes as point}
-        <circle
-            class="node"
-            r="5"
-            fill={colourScale(point.group.toString())}
-            cx={point.x}
-            cy={point.y}
-            transform="translate({transform.x} {transform.y}) scale({transform.k} {transform.k})"
-        >
-            <title>{point.id}</title></circle
-        >
-    {/each}
-</svg>
+                <title>{point.id}</title></circle
+            >
+        {/each}
+    </svg>
+</div>
 
 <style>
     svg {
@@ -212,5 +219,10 @@
     circle {
         stroke: #fff;
         stroke-width: 1.5;
+    }
+
+    .container {
+        width: 100%;
+        height: 100%;
     }
 </style>
