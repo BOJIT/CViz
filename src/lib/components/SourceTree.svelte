@@ -13,19 +13,22 @@
 
     import tree, { type TreeStore } from "$lib/stores/tree";
 
+    import { activeProject } from "$lib/stores/projects";
+
     /*--------------------------------- Props --------------------------------*/
 
     /*-------------------------------- Methods -------------------------------*/
 
     function treeToSourceList(t: TreeStore) {
-        return Object.entries(t).map((n) => n[0]);
+        return Object.entries(t)
+            .map((n) => n[0].slice($activeProject?.length))
+            .sort();
     }
 
     /*------------------------------- Lifecycle ------------------------------*/
 </script>
 
 <div class="container">
-    <h5>Source Panel</h5>
     {#each treeToSourceList($tree) as t}
         <p>{t}</p>
     {/each}
@@ -37,9 +40,6 @@
         height: 100%;
         pointer-events: all;
 
-        display: grid;
-        place-items: center;
-
         background-color: #1d1d1df1;
 
         max-height: calc(94vh - 3.8rem);
@@ -49,5 +49,6 @@
     p {
         font-family: var(--font-monospace);
         font-size: 1rem;
+        text-align: left;
     }
 </style>

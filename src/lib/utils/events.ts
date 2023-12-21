@@ -24,7 +24,6 @@ const handles: UnlistenFn[] = [];
 /*------------------------------- Functions ----------------------------------*/
 
 function handleFileChangeset(event: Event<FileChangeset>) {
-    // console.log(event);
     tree.applyChangeset(event.payload);
 }
 

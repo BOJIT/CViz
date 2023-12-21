@@ -31,11 +31,6 @@
         SimulationLinkDatum,
     } from "d3-force";
 
-    import tree from "$lib/stores/tree";
-
-    // TEMP
-    import graph from "./data";
-
     /*--------------------------------- Types --------------------------------*/
 
     interface Node extends SimulationNodeDatum {
@@ -48,6 +43,11 @@
         target: Node;
         value: number;
     }
+
+    type Graph = {
+        nodes: Node[];
+        links: Link[];
+    };
 
     /*--------------------------------- Props --------------------------------*/
 
@@ -67,8 +67,8 @@
     };
 
     let svg: SVGElement;
-    let width = 500;
-    let height = 600;
+    let width: number;
+    let height: number;
     const nodeRadius = 6;
     let container: HTMLDivElement;
 
@@ -79,6 +79,8 @@
 
     let nodes: Node[] = [];
     let links: Link[] = [];
+
+    export let graph: Graph;
 
     /*-------------------------------- Methods -------------------------------*/
 
@@ -131,16 +133,6 @@
 
     $: links = graph.links.map((d) => Object.create(d));
     $: nodes = graph.nodes.map((d) => Object.create(d));
-
-    // Map store to graph nodes and edges
-    tree.subscribe((t) => {
-        // let test = Object.entries(t).map((n) => {
-        //     return {
-        //         id: n[0],
-        //         group: 1,
-        //     };
-        // });
-    });
 
     onMount(() => {
         // Initial scale

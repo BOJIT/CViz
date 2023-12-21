@@ -55,7 +55,24 @@
 
     /*-------------------------------- Methods -------------------------------*/
 
+    import tree from "$lib/stores/tree";
+    // TEMP
+    import graph from "$lib/components/data";
+    // let graph: any = { nodes: [], links: [] };
+
     /*------------------------------- Lifecycle ------------------------------*/
+
+    // Map store to graph nodes and edges
+    // tree.subscribe((t) => {
+    //     graph.nodes = Object.entries(t).map((n) => {
+    //         return {
+    //             id: n[0],
+    //             group: 1,
+    //         };
+    //     });
+
+    //     console.log(graph);
+    // });
 
     onMount(async () => {
         if ($activeProject === null) $projectOverlay = true;
@@ -79,7 +96,7 @@
 
 {#if $activeProject !== null}
     <div class="graph-container">
-        <GraphView />
+        <GraphView {graph} />
         <div class="graph-overlay">
             <GraphOverlay />
         </div>
