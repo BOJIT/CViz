@@ -1,7 +1,7 @@
 <!--
- * @file SourceTree.svelte
+ * @file NodeInfo.svelte
  * @author James Bennion-Pedley
- * @brief Tree-structure for source file navigation
+ * @brief Shows per-node metadata, or global rules when unselected
  * @date 21/12/2023
  *
  * @copyright Copyright (c) 2023
@@ -19,7 +19,7 @@
 </script>
 
 <div class="container">
-    <h5>Source Panel</h5>
+    <h5>Node Metadata</h5>
 </div>
 
 <style>

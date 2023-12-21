@@ -15,6 +15,7 @@
 
     import project, { activeProject } from "$lib/stores/projects";
 
+    import NodeInfo from "$lib/components/NodeInfo.svelte";
     import SourceTree from "$lib/components/SourceTree.svelte";
 
     /*--------------------------------- Props --------------------------------*/
@@ -24,45 +25,56 @@
     /*------------------------------- Lifecycle ------------------------------*/
 </script>
 
-<div class="container">
-    <Splitpanes class="default-theme" style="height: 400px">
-        <Pane minSize={20}>I have a min width of 20%</Pane>
-        <Pane>
-            <Splitpanes class="default-theme" horizontal={true}>
-                <Pane minSize={15}>I have a min height of 15%</Pane>
-                <Pane>Try double clicking the splitters</Pane>
-                <Pane snapSize={10}>With a bottom snap of 10</Pane>
-            </Splitpanes>
-        </Pane>
-        <Pane>Right Panel</Pane>
-    </Splitpanes>
+{#if $activeProject !== null}
+    <div class="panes">
+        <Splitpanes horizontal theme="no-splitter">
+            <Pane>
+                <Splitpanes>
+                    <Pane snapSize={10} size={30}>
+                        <SourceTree />
+                    </Pane>
 
-    {#if $activeProject !== null}
-        <div class="side-panel">
-            <SourceTree />
-        </div>
+                    <Pane>
+                        <div class="graph-window">
+                            <h2>{$project[$activeProject].shortName}</h2>
+                        </div>
+                    </Pane>
 
-        <h2>{$project[$activeProject].shortName}</h2>
-    {/if}
-</div>
+                    <Pane snapSize={10} size={30}>
+                        <NodeInfo />
+                    </Pane>
+                </Splitpanes>
+            </Pane>
+
+            <Pane size={6} minSize={6} maxSize={6}>Statusbar</Pane>
+        </Splitpanes>
+    </div>
+{/if}
 
 <style>
-    .container {
+    .panes :global(.splitpanes__pane) {
+        background-color: transparent !important;
+    }
+
+    .panes :global(.splitpanes__splitter) {
+        background-color: #525252 !important;
+        border-left: #646464 !important;
+        border-top: #646464 !important;
+    }
+
+    .panes {
         height: 100%;
 
         position: relative;
         display: grid;
         place-items: center;
-
-        /* TODO remove eventually */
-        pointer-events: none;
     }
 
-    .side-panel {
-        position: absolute;
-        top: 0px;
-        left: 0px;
-
+    .graph-window {
         height: 100%;
+
+        position: relative;
+        display: grid;
+        place-items: center;
     }
 </style>
