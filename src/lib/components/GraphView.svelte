@@ -25,12 +25,13 @@
         forceCenter,
     } from "d3-force";
 
-    import tree from "$lib/stores/tree";
     import type {
         Simulation,
         SimulationNodeDatum,
         SimulationLinkDatum,
     } from "d3-force";
+
+    import tree from "$lib/stores/tree";
 
     // TEMP
     import graph from "./data";

@@ -34,12 +34,6 @@
         if (import.meta.env.VITE_BROWSER_CHECK === "false") resolve();
 
         resolve(); // Note: browser checks not required for Tauri build
-        // Check browser compatibility
-        // if ("showDirectoryPicker" in window) {
-        //     resolve();
-        // } else {
-        //     reject("Filesystem Access API not supported in your browser!");
-        // }
     }
 
     /*------------------------------- Lifecycle ------------------------------*/

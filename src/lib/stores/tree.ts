@@ -20,7 +20,7 @@ type NodeData = {
     dependencies: string[]
 }
 
-type TreeStore = {
+export type TreeStore = {
     [key: string]: NodeData
 }
 
@@ -28,7 +28,7 @@ type TreeStore = {
 
 const DEFAULT = {};
 
-const store: Writable<TreeStore> = writable(DEFAULT);
+const store: Writable<TreeStore> = writable(structuredClone(DEFAULT));
 
 /*------------------------------- Functions ----------------------------------*/
 

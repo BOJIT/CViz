@@ -21,6 +21,7 @@
     import GraphOverlay from "$lib/components/GraphOverlay.svelte";
     import GraphView from "$lib/components/GraphView.svelte";
     import ProjectDialog from "$lib/components/dialogs/ProjectDialog.svelte";
+    import SettingsDialog from "$lib/components/dialogs/SettingsDialog.svelte";
 
     // Stores
     import { projectOverlay, settingsOverlay } from "$lib/stores/overlays";
@@ -85,6 +86,7 @@
 {/if}
 
 <ProjectDialog bind:visible={$projectOverlay} />
+<SettingsDialog bind:visible={$settingsOverlay} />
 
 {#if import.meta.env.VITE_SHOW_UNSTABLE === "true"}
     <!-- Beta Banner -->

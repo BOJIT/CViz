@@ -12,37 +12,23 @@
     /*-------------------------------- Imports -------------------------------*/
 
     import { message } from "@bojit/svelte-components/core";
-    import {
-        IconButton,
-        SearchableList,
-        TextIconButton,
-    } from "@bojit/svelte-components/form";
+    import { IconButton, TextIconButton } from "@bojit/svelte-components/form";
     import { BaseDialog } from "@bojit/svelte-components/layout";
     import { Tabs } from "@bojit/svelte-components/widgets";
     import theme from "@bojit/svelte-components/theme";
     const mode = theme.Mode;
 
     import {
-        Bluetooth,
         CheckmarkCircle,
         CloseCircle,
         CloudDownload,
         Contrast,
-        Desktop,
-        GameController,
-        Location,
         Moon,
-        MusicalNotes,
         Settings,
         Sunny,
-        Terminal,
         Warning,
     } from "@svicons/ionicons-outline";
 
-    import components from "$lib/stores/components";
-    import hardware, { type HardwareType } from "$lib/stores/hardware";
-    import logs from "$lib/stores/logs";
-    import patch from "$lib/stores/patch";
     import settings from "$lib/stores/settings";
 
     import Logo from "$lib/assets/img/BOJIT_Square.png";
@@ -71,25 +57,18 @@
 
     let tabs = [
         {
-            label: "Global",
+            label: "Project Settings",
         },
         {
-            label: "Hardware",
+            label: "Global Settings",
         },
         {
-            label: "Components",
-        },
-        {
-            label: "Logs",
-        },
-        {
-            label: "About",
+            label: "About CViz",
         },
     ];
 
     let index = 0;
     let areYouSure = false;
-    let permissions = {};
 
     /*-------------------------------- Methods -------------------------------*/
 
@@ -109,37 +88,23 @@
         }
     }
 
-    async function addHardwarePermission(type: HardwareType) {
-        try {
-            await hardware.addDevice(type);
-        } catch (error: any) {
-            message.push({
-                type: "error",
-                title: "Hardware Error",
-                message: error.message,
-                timeout: 10,
-            });
-        }
-
-        // In the case of non-store hardware (e.g. GPS), force store update
-        $hardware = $hardware;
-    }
-
     /*------------------------------- Lifecycle ------------------------------*/
 
     $: if (visible) {
         index = 0;
     }
-
-    hardware.subscribe(async (h) => {
-        permissions = await hardware.enumerateAccess($hardware);
-    });
 </script>
 
 <svelte:window on:keydown={handleKeydown} />
 
 <BaseDialog title="Settings" icon={Settings} bind:visible>
     <Tabs {tabs} bind:index fade>
+        <!-- Project -->
+        <div class="tab">
+            <h5>Project Settings</h5>
+            <hr />
+        </div>
+
         <!-- Global -->
         <div class="tab">
             <h5>Global Settings</h5>
@@ -164,22 +129,8 @@
             <h6 class="center">Program Configuration</h6>
             <div class="themes center">
                 <TextIconButton
-                    icon={CloudDownload}
-                    label="Export Config"
-                    shape="rounded"
-                    color="primary"
-                    on:click={() => {
-                        message.push({
-                            type: "error",
-                            title: "Not Supported!",
-                            message: "This feature is not implemented!",
-                            timeout: 10,
-                        });
-                    }}
-                />
-                <TextIconButton
                     icon={Warning}
-                    label="Reset ploTTY"
+                    label="Reset CViz"
                     shape="rounded"
                     outlined
                     color="error"
@@ -190,104 +141,18 @@
             </div>
         </div>
 
-        <!-- Hardware Permissions -->
-        <div class="tab">
-            <h5>Hardware Permissions</h5>
-            <hr />
-            <div class="add-hardware">
-                <h6 style:padding-top="0.3rem">Add:</h6>
-                {#if "serial" in navigator}
-                    <IconButton
-                        icon={Terminal}
-                        size="1rem"
-                        color={col}
-                        label="Serial"
-                        on:click={() => addHardwarePermission("serial")}
-                    />
-                {/if}
-                {#if "bluetooth" in navigator}
-                    <IconButton
-                        icon={Bluetooth}
-                        size="1rem"
-                        color={col}
-                        label="Bluetooth"
-                        on:click={() => addHardwarePermission("bluetooth")}
-                    />
-                {/if}
-                {#if "requestMIDIAccess" in navigator}
-                    <IconButton
-                        icon={MusicalNotes}
-                        size="1rem"
-                        color={col}
-                        label="MIDI"
-                        on:click={() => addHardwarePermission("midi")}
-                    />
-                {/if}
-                <IconButton
-                    icon={Desktop}
-                    size="1rem"
-                    color={col}
-                    label="WebSocket"
-                    on:click={() => addHardwarePermission("websocket")}
-                />
-                <IconButton
-                    icon={GameController}
-                    size="1rem"
-                    color={col}
-                    label="Gamepad"
-                    on:click={() => addHardwarePermission("gamepad")}
-                />
-                <IconButton
-                    icon={Location}
-                    size="1rem"
-                    color={col}
-                    label="GPS"
-                    on:click={() => addHardwarePermission("gps")}
-                />
-            </div>
-            {#if Object.keys(permissions).length > 0}
-                <SearchableList items={permissions} maxHeight="12rem" />
-                <p>
-                    some permissions may need to be cleared in your <a
-                        href="https://support.google.com/chrome/answer/114662"
-                        target="_blank">browser</a
-                    >
-                </p>
-            {:else}
-                <p style:color="var(--color-gray-500)">[No Permissions]</p>
-            {/if}
-        </div>
-
-        <!-- Component Libraries -->
-        <div class="tab">
-            <h5>Component Libraries</h5>
-            <hr />
-            <p style:color="var(--color-error-400)">Not implemented yet!</p>
-        </div>
-
-        <!-- Logs -->
-        <div class="tab">
-            <h5>Logs</h5>
-            <hr />
-            {#if Object.keys($logs).length > 0}
-                <SearchableList items={{}} />
-            {:else}
-                <p style:color="var(--color-gray-500)">[No Logs]</p>
-            {/if}
-        </div>
-
         <!-- About -->
         <div class="tab">
             <h5>About This App</h5>
             <p>
-                ploTTY is a serial monitor/plotting application maintained by <a
+                CViz is a source code analysis tool maintained by <a
                     href="https://bojit.org/">James Bennion-Pedley</a
                 >.
             </p>
             <hr />
             <p>
                 Current Release: <a
-                    href={"https://github.com/BOJIT/ploTTY/commit/" +
+                    href={"https://github.com/BOJIT/CViz/commit/" +
                         import.meta.env.VITE_GIT_HASH}
                     target="_blank"
                     rel="noreferrer"
@@ -297,7 +162,7 @@
             </p>
             <p>
                 If you have an issue or feature request let me know on <a
-                    href="https://github.com/BOJIT/ploTTY/"
+                    href="https://github.com/BOJIT/CViz/"
                     target="_blank"
                     rel="noreferrer">GitHub</a
                 >!
@@ -312,7 +177,8 @@
 
 <BaseDialog title="Confirm Reset" bind:visible={areYouSure}>
     <p>
-        This will reset <b>ALL</b> settings/patches/libraries to default state.
+        This will reset CViz to default state. Note that this will not delete
+        project files from disk.
     </p>
     <div slot="actions">
         <TextIconButton
@@ -329,17 +195,13 @@
             color="error"
             outlined
             on:click={() => {
-                patch.reset();
-                components.reset();
-                logs.reset();
-                hardware.reset();
                 settings.reset();
 
                 areYouSure = false;
                 message.push({
                     type: "info",
                     title: "Reset Successful!",
-                    message: "ploTTY has been reset to its default state",
+                    message: "CViz has been reset to its default state",
                     timeout: 10,
                 });
             }}
@@ -382,14 +244,6 @@
         display: flex;
         gap: 0.5rem;
         align-items: center;
-    }
-
-    .add-hardware {
-        padding: 0.5rem;
-
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
     }
 
     img {
