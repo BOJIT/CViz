@@ -17,6 +17,7 @@
 export type FileChangeset = {
     type: "removed" | "renamed" | "added" | "modified",
     key: string,
+    includes?: string[]
 }
 
 export type UINotification = {

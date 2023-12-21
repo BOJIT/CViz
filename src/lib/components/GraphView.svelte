@@ -25,6 +25,26 @@
         forceCenter,
     } from "d3-force";
 
+    import tree from "$lib/stores/tree";
+    import type {
+        Simulation,
+        SimulationNodeDatum,
+        SimulationLinkDatum,
+    } from "d3-force";
+
+    /*--------------------------------- Types --------------------------------*/
+
+    interface Node extends SimulationNodeDatum {
+        id: string;
+        group: number;
+    }
+
+    interface Link extends SimulationLinkDatum<Node> {
+        source: Node;
+        target: Node;
+        value: number;
+    }
+
     /*--------------------------------- Props --------------------------------*/
 
     let d3 = {
@@ -42,19 +62,18 @@
         forceCenter,
     };
 
-    export let graph;
-
-    let svg;
+    let svg: SVGElement;
     let width = 500;
     let height = 600;
     const nodeRadius = 5;
 
-    const padding = { top: 20, right: 40, bottom: 40, left: 25 };
-
     const colourScale = d3.scaleOrdinal(d3.schemeCategory10);
 
     let transform = d3.zoomIdentity;
-    let simulation;
+    let simulation: Simulation<Node, Link>;
+
+    let nodes: Node[] = [];
+    let links: Link[] = [];
 
     /*-------------------------------- Methods -------------------------------*/
 
@@ -64,36 +83,36 @@
         links = [...links];
     }
 
-    function zoomed(currentEvent) {
+    function zoomed(currentEvent: any) {
         transform = currentEvent.transform;
         simulationUpdate();
     }
 
-    function dragsubject(currentEvent) {
+    function dragsubject(currentEvent: any) {
         const node = simulation.find(
             transform.invertX(currentEvent.x),
             transform.invertY(currentEvent.y),
             nodeRadius,
         );
-        if (node) {
+        if (node && node.x && node.y) {
             node.x = transform.applyX(node.x);
             node.y = transform.applyY(node.y);
         }
         return node;
     }
 
-    function dragstarted(currentEvent) {
+    function dragstarted(currentEvent: any) {
         if (!currentEvent.active) simulation.alphaTarget(0.3).restart();
         currentEvent.subject.fx = transform.invertX(currentEvent.subject.x);
         currentEvent.subject.fy = transform.invertY(currentEvent.subject.y);
     }
 
-    function dragged(currentEvent) {
+    function dragged(currentEvent: any) {
         currentEvent.subject.fx = transform.invertX(currentEvent.x);
         currentEvent.subject.fy = transform.invertY(currentEvent.y);
     }
 
-    function dragended(currentEvent) {
+    function dragended(currentEvent: any) {
         if (!currentEvent.active) simulation.alphaTarget(0);
         currentEvent.subject.fx = null;
         currentEvent.subject.fy = null;
@@ -105,8 +124,21 @@
 
     /*------------------------------- Lifecycle ------------------------------*/
 
-    $: links = graph.links.map((d) => Object.create(d));
-    $: nodes = graph.nodes.map((d) => Object.create(d));
+    // $: links = graph.links.map((d) => Object.create(d));
+    // $: nodes = graph.nodes.map((d) => Object.create(d));
+
+    // Map store to graph nodes and edges
+    tree.subscribe((t) => {
+        // nodes = Object.entries(t).map((n) => {
+        //     return {
+        //         id: n[0],
+        //         group: 1,
+        //     };
+        // });
+        // simulationUpdate();
+        // console.log(t);
+        // console.log(nodes);
+    });
 
     onMount(() => {
         simulation = d3
@@ -160,7 +192,7 @@
         <circle
             class="node"
             r="5"
-            fill={colourScale(point.group)}
+            fill={colourScale(point.group.toString())}
             cx={point.x}
             cy={point.y}
             transform="translate({transform.x} {transform.y}) scale({transform.k} {transform.k})"

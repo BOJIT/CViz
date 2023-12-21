@@ -12,10 +12,16 @@
 
 import { writable, type Writable } from "svelte/store";
 
+import type { FileChangeset } from "$lib/ipc";
+
 /*--------------------------------- Types ------------------------------------*/
 
-type TreeStore = {
+type NodeData = {
+    dependencies: string[]
+}
 
+type TreeStore = {
+    [key: string]: NodeData
 }
 
 /*--------------------------------- State ------------------------------------*/
@@ -35,6 +41,24 @@ function reset(): void {
     store.set(DEFAULT);
 }
 
+function applyChangeset(cs: FileChangeset) {
+    //
+    switch (cs.type) {
+        case "added":
+        case "modified":
+            {
+                store.update((s) => {
+                    s[cs.key] = {
+                        dependencies: cs.includes ? cs.includes : [],
+                    };
+                    return s;
+                })
+
+                break;
+            }
+    }
+}
+
 /*-------------------------------- Exports -----------------------------------*/
 
 export default {
@@ -43,4 +67,5 @@ export default {
     update: store.update,
     init,
     reset,
+    applyChangeset,
 };

@@ -15,6 +15,8 @@ import { listen, type Event, type UnlistenFn } from '@tauri-apps/api/event'
 
 import type { FileChangeset, UINotification } from "$lib/ipc";
 
+import tree from "$lib/stores/tree";
+
 /*--------------------------------- State ------------------------------------*/
 
 const handles: UnlistenFn[] = [];
@@ -22,7 +24,8 @@ const handles: UnlistenFn[] = [];
 /*------------------------------- Functions ----------------------------------*/
 
 function handleFileChangeset(event: Event<FileChangeset>) {
-    console.log(event);
+    // console.log(event);
+    tree.applyChangeset(event.payload);
 }
 
 function handleUINotify(event: Event<UINotification>) {

@@ -91,7 +91,7 @@ pub mod utils {
 
         // Match on event type return if unsupported
         match event.kind {
-            EventKind::Create(f) => {
+            EventKind::Create(_) => {
                 let meta = parse_symbols(event.paths[0].to_str().unwrap());
 
                 return match meta {
@@ -99,7 +99,7 @@ pub mod utils {
                     None => ipc::FileChangeset::NoEvent,
                 };
             }
-            EventKind::Remove(f) => {
+            EventKind::Remove(_) => {
                 return ipc::FileChangeset::Removed(String::from(event.paths[0].to_str().unwrap()));
             }
             EventKind::Modify(f) => match f {

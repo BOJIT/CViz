@@ -10,7 +10,7 @@ use tauri::Manager;
 use tokio::sync::mpsc;
 
 // Local Modules
-mod config_tree;
+// mod config_tree;
 mod ipc;
 mod parse_file;
 

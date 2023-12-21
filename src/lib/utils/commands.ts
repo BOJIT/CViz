@@ -12,6 +12,8 @@
 
 import { invoke } from '@tauri-apps/api/tauri'
 
+import tree from '$lib/stores/tree';
+
 /*--------------------------------- State ------------------------------------*/
 
 /*------------------------------- Functions ----------------------------------*/
@@ -21,7 +23,10 @@ async function pickDirectory(): Promise<string> {
 }
 
 async function initialiseTreeWatcher(root: string): Promise<boolean> {
-    // TODO destroy old instances if multiple active?
+    // Clear out the old tree
+    tree.reset();
+
+    // Wait for new tree watcher to start
     return await invoke('initialise_tree_watcher', { root: root });
 }
 

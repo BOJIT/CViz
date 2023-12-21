@@ -22,9 +22,6 @@
     import GraphView from "$lib/components/GraphView.svelte";
     import ProjectDialog from "$lib/components/dialogs/ProjectDialog.svelte";
 
-    // TEMP
-    import data from "$lib/components/data";
-
     // Stores
     import { projectOverlay, settingsOverlay } from "$lib/stores/overlays";
     import projects, { activeProject } from "$lib/stores/projects";
@@ -80,7 +77,7 @@
 
 {#if $activeProject !== null}
     <div class="graph-container">
-        <GraphView graph={data} />
+        <GraphView />
         <div class="graph-overlay">
             <GraphOverlay />
         </div>
