@@ -11,9 +11,10 @@
 <script lang="ts">
     /*-------------------------------- Imports -------------------------------*/
 
-    import { Treeview } from "@bojit/svelte-components/smelte";
+    import TreeView from "$lib/components/TreeView.svelte";
 
     import tree, { type NestedTree } from "$lib/stores/tree";
+    import { Checkbox } from "@bojit/svelte-components/smelte";
 
     /*--------------------------------- Types --------------------------------*/
 
@@ -56,7 +57,12 @@
 </script>
 
 <div class="container">
-    <Treeview items={pushTreeEntry([], $tree)} />
+    <TreeView items={pushTreeEntry([], $tree)} dense let:item>
+        <span class="tree-entry">
+            {item.text}
+            <Checkbox />
+        </span>
+    </TreeView>
 </div>
 
 <style>
@@ -69,6 +75,13 @@
 
         max-height: calc(94vh - 3.8rem);
         overflow: scroll;
+    }
+
+    .tree-entry {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-family: var(--font-monospace);
     }
 
     p {
