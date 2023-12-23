@@ -12,9 +12,11 @@
     /*-------------------------------- Imports -------------------------------*/
 
     import TreeView from "$lib/components/TreeView.svelte";
+    import TreeButtonGroup from "$lib/components/TreeButtonGroup.svelte";
 
     import tree, { type NestedTree } from "$lib/stores/tree";
-    import { Checkbox } from "@bojit/svelte-components/smelte";
+
+    import { Document } from "@svicons/ionicons-outline";
 
     /*--------------------------------- Types --------------------------------*/
 
@@ -59,8 +61,13 @@
 <div class="container">
     <TreeView items={pushTreeEntry([], $tree)} dense let:item>
         <span class="tree-entry">
+            {#if !item.items}
+                <Document height="1rem" />
+            {/if}
             {item.text}
-            <Checkbox />
+            {#if item.items}
+                <TreeButtonGroup />
+            {/if}
         </span>
     </TreeView>
 </div>
@@ -79,14 +86,10 @@
 
     .tree-entry {
         display: flex;
+        gap: 0.6rem;
+
         align-items: center;
         justify-content: center;
         font-family: var(--font-monospace);
-    }
-
-    p {
-        font-family: var(--font-monospace);
-        font-size: 1rem;
-        text-align: left;
     }
 </style>
