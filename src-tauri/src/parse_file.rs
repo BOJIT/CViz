@@ -89,6 +89,8 @@ pub mod utils {
             }
         }
 
+        // TODO convert windows to UNIX-style paths
+
         // Match on event type return if unsupported
         match event.kind {
             EventKind::Create(_) => {

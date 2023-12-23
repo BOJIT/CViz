@@ -11,27 +11,42 @@
 <script lang="ts">
     /*-------------------------------- Imports -------------------------------*/
 
-    import tree, { type TreeStore } from "$lib/stores/tree";
+    import { Treeview } from "@bojit/svelte-components/smelte";
 
-    import { activeProject } from "$lib/stores/projects";
+    import tree, { type NestedTree } from "$lib/stores/tree";
+
+    /*--------------------------------- Types --------------------------------*/
+
+    type TreeViewEntry = {
+        text: string;
+        items?: TreeViewEntry[];
+    };
 
     /*--------------------------------- Props --------------------------------*/
 
     /*-------------------------------- Methods -------------------------------*/
 
-    function treeToSourceList(t: TreeStore) {
-        return Object.entries(t)
-            .map((n) => n[0].slice($activeProject?.length))
-            .sort();
+    function pushTreeEntry(tv: TreeViewEntry[], t: NestedTree) {
+        if (t.items) {
+            Object.entries(t.items)
+                .sort()
+                .forEach((n) => {
+                    const entry: TreeViewEntry = { text: n[0] };
+                    const items = pushTreeEntry([], n[1]);
+                    if (items.length > 0) entry.items = items;
+
+                    tv.push(entry);
+                });
+        }
+
+        return tv;
     }
 
     /*------------------------------- Lifecycle ------------------------------*/
 </script>
 
 <div class="container">
-    {#each treeToSourceList($tree) as t}
-        <p>{t}</p>
-    {/each}
+    <Treeview items={pushTreeEntry([], $tree)} />
 </div>
 
 <style>

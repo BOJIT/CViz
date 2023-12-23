@@ -55,7 +55,6 @@
 
     /*-------------------------------- Methods -------------------------------*/
 
-    import tree from "$lib/stores/tree";
     // TEMP
     import graph from "$lib/components/data";
     // let graph: any = { nodes: [], links: [] };

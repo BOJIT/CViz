@@ -10,9 +10,11 @@
 
 /*-------------------------------- Imports -----------------------------------*/
 
-import { writable, type Writable } from "svelte/store";
+import { writable, type Writable, get } from "svelte/store";
 
 import type { FileChangeset } from "$lib/ipc";
+
+import { activeProject } from "$lib/stores/projects";
 
 /*--------------------------------- Types ------------------------------------*/
 
@@ -20,18 +22,20 @@ type NodeData = {
     dependencies: string[]
 }
 
-export type TreeStore = {
-    [key: string]: NodeData
-}
+export type NestedTree = {
+    data?: NodeData,
+    items?: {
+        [key: string]: NestedTree,
+    },
+};
 
 /*--------------------------------- State ------------------------------------*/
 
-const store: Writable<TreeStore> = writable({});
+const store: Writable<NestedTree> = writable({});
 
 /*------------------------------- Functions ----------------------------------*/
 
-async function init(): Promise<Writable<TreeStore>> {
-
+async function init(): Promise<Writable<NestedTree>> {
     return store;
 }
 
@@ -40,17 +44,35 @@ function reset(): void {
 }
 
 function applyChangeset(cs: FileChangeset) {
-    //
+    // Pre-flight checks
+    const prefix = get(activeProject);
+    if (prefix === null) return;
+    if (!cs.key.startsWith(prefix)) return;
+
     switch (cs.type) {
         case "added":
         case "modified":
             {
+                // Populate nested tree
+                let treeComponents = cs.key.slice(prefix.length).split('/').filter((c) => (c.length > 0));
+
                 store.update((s) => {
-                    s[cs.key] = {
+                    let n = s;  // Root node REF
+                    for (let i = 0; i < treeComponents.length; i++) {
+                        if (n.items === undefined) n.items = {};
+
+                        // Populate child if missing
+                        if (n.items[treeComponents[i]] === undefined) n.items[treeComponents[i]] = {};
+                        n = n.items[treeComponents[i]];  // by REF
+                    }
+
+                    // Populate final node data (TODO)
+                    n.data = {
                         dependencies: cs.includes ? cs.includes : [],
                     };
+
                     return s;
-                })
+                });
 
                 break;
             }

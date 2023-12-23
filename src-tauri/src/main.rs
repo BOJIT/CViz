@@ -5,7 +5,7 @@
 
 use native_dialog::FileDialog;
 use notify::{RecursiveMode, Watcher};
-use std::collections::HashMap;
+// use std::collections::HashMap;
 use tauri::Manager;
 use tokio::sync::mpsc;
 
@@ -19,8 +19,8 @@ mod parse_file;
 // App State (Ephemeral)
 struct AppState {
     directory_watcher: Option<notify::RecommendedWatcher>,
-    directory_channel: (mpsc::Sender<String>, mpsc::Receiver<String>),
-    file_tree: HashMap<String, u32>,
+    // directory_channel: (mpsc::Sender<String>, mpsc::Receiver<String>),
+    // file_tree: HashMap<String, u32>,
 }
 
 struct AppStateMutable(std::sync::Mutex<AppState>);
@@ -112,9 +112,9 @@ fn initialise_tree_watcher(
 
 /* -------------------------------- Tauri Events ---------------------------- */
 
-fn show_webview_dialog(app_handle: tauri::AppHandle, message: &ipc::UINotification) {
-    app_handle.emit_all("ui-notify", message).unwrap();
-}
+// fn show_webview_dialog(app_handle: tauri::AppHandle, message: &ipc::UINotification) {
+//     app_handle.emit_all("ui-notify", message).unwrap();
+// }
 
 fn send_watcher_event<R: tauri::Runtime>(message: String, manager: &impl Manager<R>) {
     manager.emit_all("rs2js", message).unwrap();
@@ -144,8 +144,8 @@ fn main() {
         .manage(AppStateMutable(
             AppState {
                 directory_watcher: None,
-                directory_channel: mpsc::channel(1),
-                file_tree: HashMap::new(),
+                // directory_channel: mpsc::channel(1),
+                // file_tree: HashMap::new(),
             }
             .into(),
         ))
