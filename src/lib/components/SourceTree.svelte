@@ -29,7 +29,17 @@
     function pushTreeEntry(tv: TreeViewEntry[], t: NestedTree) {
         if (t.items) {
             Object.entries(t.items)
-                .sort()
+                .sort((a: [string, NestedTree], b: [string, NestedTree]) => {
+                    // Directories first
+                    if (a[1].items && !b[1].items) return -1;
+                    if (b[1].items && !a[1].items) return 1;
+
+                    // Alphabetical compare
+                    if (a[0] < b[0]) return -1;
+                    if (a[0] > b[0]) return 1;
+
+                    return 0;
+                })
                 .forEach((n) => {
                     const entry: TreeViewEntry = { text: n[0] };
                     const items = pushTreeEntry([], n[1]);
