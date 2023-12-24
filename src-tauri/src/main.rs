@@ -125,10 +125,17 @@ async fn initialise_tree_watcher(
                 let _ = w.watch(std::path::Path::new(root), RecursiveMode::Recursive);
                 *watcher_slot = Some(w);
             }
-            Err(_) => (), // TODO send watcher warning?
+            Err(_) => {
+                show_webview_dialog(
+                    &app_handle,
+                    &ipc::UINotification::Warning(ipc::UINotificationMetdata {
+                        title: "File Watcher Error".to_string(),
+                        message: "Could not create a file watcher for changes".to_string(),
+                        timeout: None,
+                    }),
+                );
+            }
         };
-
-        drop(watcher_slot);
     }
 
     return Result::Ok(());
@@ -179,8 +186,6 @@ fn read_config_file(app_handle: tauri::AppHandle, root: &str) {
             ipc::ConfigTree { syntax: 1 }
         }
     };
-
-    println!("{:?}", data);
 }
 
 #[tauri::command]

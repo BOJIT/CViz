@@ -14,6 +14,7 @@
     import { onMount } from "svelte";
 
     import { NavBar, type NavItem } from "@bojit/svelte-components/layout";
+    import { ProgressLinear } from "@bojit/svelte-components/smelte";
 
     import { FolderOpen, Settings } from "@svicons/ionicons-outline";
 
@@ -25,7 +26,11 @@
     import SettingsDialog from "$lib/components/dialogs/SettingsDialog.svelte";
 
     // Stores
-    import { projectOverlay, settingsOverlay } from "$lib/stores/overlays";
+    import {
+        loadingOverlay,
+        projectOverlay,
+        settingsOverlay,
+    } from "$lib/stores/overlays";
     import { activeProject } from "$lib/stores/projects";
     import tree from "$lib/stores/tree";
 
@@ -109,6 +114,11 @@
         <div class="graph-overlay">
             <GraphOverlay />
         </div>
+        {#if $loadingOverlay}
+            <div class="progress-bar">
+                <ProgressLinear />
+            </div>
+        {/if}
     </div>
 {/if}
 
@@ -143,6 +153,16 @@
         right: 0px;
 
         pointer-events: none;
+    }
+
+    .progress-bar {
+        position: absolute;
+        top: 0px;
+        bottom: 0px;
+        left: 0px;
+        right: 0px;
+
+        background-color: rgba(12, 12, 12, 0.5);
     }
 
     /* Banner for development release */

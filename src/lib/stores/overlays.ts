@@ -14,16 +14,18 @@ import { writable, type Writable } from "svelte/store";
 
 /*--------------------------------- State ------------------------------------*/
 
-const themeOverlay: Writable<boolean> = writable(false);
-const settingsOverlay: Writable<boolean> = writable(false);
+const loadingOverlay: Writable<boolean> = writable(false);
 const projectOverlay: Writable<boolean> = writable(false);
+const settingsOverlay: Writable<boolean> = writable(false);
+const themeOverlay: Writable<boolean> = writable(false);
 
 /*------------------------------- Functions ----------------------------------*/
 
 /*-------------------------------- Exports -----------------------------------*/
 
 export {
-    themeOverlay,
-    settingsOverlay,
+    loadingOverlay,
     projectOverlay,
+    settingsOverlay,
+    themeOverlay,
 };

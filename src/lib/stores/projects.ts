@@ -16,6 +16,7 @@ import localForage from "localforage";
 
 import tree from '$lib/stores/tree';
 import { initialiseTreeWatcher, readConfigFile } from "$lib/utils/commands";
+import { loadingOverlay } from "$lib/stores/overlays";
 
 /*--------------------------------- Types ------------------------------------*/
 
@@ -58,13 +59,17 @@ async function init(): Promise<Writable<ProjectStore>> {
     activeProject.subscribe(async (val: string | null) => {
         if (val === null) return;
 
+        // Show loading scrim
+        loadingOverlay.set(true);
+
         // Clear out the old tree
         tree.reset();
 
-        // Read new config file
+        // Read new config file and load new project
         await readConfigFile(val);
-
         await initialiseTreeWatcher(val);
+
+        loadingOverlay.set(false);
     });
 
     return store;
