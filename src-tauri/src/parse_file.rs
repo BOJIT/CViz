@@ -3,6 +3,7 @@ pub mod utils {
     use regex::Regex;
     use std::fs::File;
     use std::io::{BufRead, BufReader};
+    use std::path::Path;
 
     use crate::ipc;
 
@@ -28,9 +29,9 @@ pub mod utils {
         paths
     }
 
-    pub fn parse_symbols(path: &str) -> Option<ipc::FileMetdadata> {
+    pub async fn parse_symbols(path: String) -> Option<ipc::FileMetdadata> {
         let mut metadata = ipc::FileMetdadata {
-            key: String::from(path),
+            key: String::from(&path),
             includes: Vec::new(),
         };
 
@@ -38,7 +39,7 @@ pub mod utils {
         let rx = Regex::new(r###"#include\s+[" < "](.*)[">]"###).unwrap();
 
         // Search for line-by-line matches
-        let file = File::open(path);
+        let file = File::open(Path::new(&path));
         match file {
             Ok(f) => {
                 let reader = BufReader::new(f);
@@ -70,7 +71,7 @@ pub mod utils {
         return Some(metadata);
     }
 
-    pub fn handle_directory_change(res: notify::Result<notify::Event>) -> ipc::FileChangeset {
+    pub async fn handle_directory_change(res: notify::Result<notify::Event>) -> ipc::FileChangeset {
         let event = match res {
             Ok(event) => event,
             Err(_) => return ipc::FileChangeset::NoEvent, // Ignore watch errors for now
@@ -94,7 +95,7 @@ pub mod utils {
         // Match on event type return if unsupported
         match event.kind {
             EventKind::Create(_) => {
-                let meta = parse_symbols(event.paths[0].to_str().unwrap());
+                let meta = parse_symbols(String::from(event.paths[0].to_str().unwrap())).await;
 
                 return match meta {
                     Some(m) => ipc::FileChangeset::Modified(m),
@@ -122,7 +123,7 @@ pub mod utils {
 
                 // File has been re-modified. Re-tokenize
                 ModifyKind::Data(_) => {
-                    let meta = parse_symbols(event.paths[0].to_str().unwrap());
+                    let meta = parse_symbols(String::from(event.paths[0].to_str().unwrap())).await;
 
                     return match meta {
                         Some(m) => ipc::FileChangeset::Modified(m),
