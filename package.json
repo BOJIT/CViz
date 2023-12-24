@@ -41,6 +41,7 @@
         "d3-selection": "^3.0.0",
         "d3-zoom": "^3.0.0",
         "localforage": "^1.10.0",
+        "svelte-awesome-color-picker": "^2.4.8",
         "svelte-splitpanes": "^0.8.0"
     }
 }
