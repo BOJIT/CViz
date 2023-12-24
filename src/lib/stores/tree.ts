@@ -67,40 +67,44 @@ function resolve(path: string): string | null {
     return null;
 }
 
-function applyChangeset(cs: FileChangeset) {
-    // Pre-flight checks
-    const prefix = get(activeProject);
-    if (prefix === null) return;
-    if (!cs.key.startsWith(prefix)) return;
+function applyChangesets(changesets: FileChangeset[]) {
+    store.update((s) => {
+        // Pre-flight checks
+        const prefix = get(activeProject);
+        if (prefix === null) return;
 
-    switch (cs.type) {
-        case "added":
-        case "modified":
-            {
-                // Populate nested tree
-                let treeComponents = cs.key.slice(prefix.length).split('/').filter((c) => (c.length > 0));
+        changesets.forEach((cs) => {
+            if (!cs.key.startsWith(prefix)) return;
 
-                store.update((s) => {
-                    let n = s;  // Root node REF
-                    for (let i = 0; i < treeComponents.length; i++) {
-                        if (n.items === undefined) n.items = {};
+            switch (cs.type) {
+                case "added":
+                case "modified":
+                    {
+                        // Populate nested tree
+                        let treeComponents = cs.key.slice(prefix.length).split('/').filter((c) => (c.length > 0));
 
-                        // Populate child if missing
-                        if (n.items[treeComponents[i]] === undefined) n.items[treeComponents[i]] = {};
-                        n = n.items[treeComponents[i]];  // by REF
+
+                        let n = s;  // Root node REF
+                        for (let i = 0; i < treeComponents.length; i++) {
+                            if (n.items === undefined) n.items = {};
+
+                            // Populate child if missing
+                            if (n.items[treeComponents[i]] === undefined) n.items[treeComponents[i]] = {};
+                            n = n.items[treeComponents[i]];  // by REF
+                        }
+
+                        // Populate final node data
+                        n.data = {
+                            dependencies: cs.includes ? cs.includes : [],
+                        };
+
+                        break;
                     }
-
-                    // Populate final node data
-                    n.data = {
-                        dependencies: cs.includes ? cs.includes : [],
-                    };
-
-                    return s;
-                });
-
-                break;
             }
-    }
+        })
+
+        return s;
+    });
 }
 
 /*-------------------------------- Exports -----------------------------------*/
@@ -112,5 +116,5 @@ export default {
     init,
     reset,
     flatten,
-    applyChangeset,
+    applyChangesets,
 };

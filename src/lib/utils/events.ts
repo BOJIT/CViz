@@ -23,8 +23,8 @@ const handles: UnlistenFn[] = [];
 
 /*------------------------------- Functions ----------------------------------*/
 
-function handleFileChangeset(event: Event<FileChangeset>) {
-    tree.applyChangeset(event.payload);
+function handleFileChangeset(event: Event<FileChangeset[]>) {
+    tree.applyChangesets(event.payload);
 }
 
 function handleUINotify(event: Event<UINotification>) {
@@ -32,7 +32,7 @@ function handleUINotify(event: Event<UINotification>) {
 }
 
 async function init() {
-    handles.push(await listen<FileChangeset>("file-changeset", handleFileChangeset));
+    handles.push(await listen<FileChangeset[]>("file-changeset", handleFileChangeset));
     handles.push(await listen<UINotification>("ui-notify", handleUINotify));
 }
 

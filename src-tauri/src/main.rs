@@ -5,6 +5,7 @@
 
 use std::io::Write;
 
+use ipc::FileChangeset;
 use native_dialog::FileDialog;
 use notify::{RecursiveMode, Watcher};
 use tauri::Manager;
@@ -80,17 +81,18 @@ async fn initialise_tree_watcher(
         set.spawn(parse_file::utils::parse_symbols(String::from(f)));
     }
 
+    // Pass all initial changesets in a single event
+    let mut changesets: Vec<FileChangeset> = Vec::with_capacity(files.len());
     while let Some(res) = set.join_next().await {
         let meta = res.unwrap();
         match meta {
             Some(m) => {
-                app_handle
-                    .emit_all("file-changeset", ipc::FileChangeset::Added(m))
-                    .unwrap();
+                changesets.push(ipc::FileChangeset::Added(m));
             }
             None => (),
         }
     }
+    app_handle.emit_all("file-changeset", changesets).unwrap();
 
     // Add global watcher for added/deleted files
     {
