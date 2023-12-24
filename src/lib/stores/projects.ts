@@ -14,7 +14,8 @@ import { writable, type Writable } from "svelte/store";
 
 import localForage from "localforage";
 
-import { initialiseTreeWatcher } from "$lib/utils/commands";
+import tree from '$lib/stores/tree';
+import { initialiseTreeWatcher, readConfigFile } from "$lib/utils/commands";
 
 /*--------------------------------- Types ------------------------------------*/
 
@@ -56,6 +57,13 @@ async function init(): Promise<Writable<ProjectStore>> {
     // Active project changes trigger a tree watcher re-initialisation
     activeProject.subscribe(async (val: string | null) => {
         if (val === null) return;
+
+        // Clear out the old tree
+        tree.reset();
+
+        // Read new config file
+        await readConfigFile(val);
+
         await initialiseTreeWatcher(val);
     });
 

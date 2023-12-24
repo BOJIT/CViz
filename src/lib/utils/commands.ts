@@ -12,7 +12,7 @@
 
 import { invoke } from '@tauri-apps/api/tauri'
 
-import tree from '$lib/stores/tree';
+import type { ConfigTree } from '$lib/stores/config';
 
 /*--------------------------------- State ------------------------------------*/
 
@@ -23,13 +23,18 @@ async function pickDirectory(): Promise<string> {
 }
 
 async function initialiseTreeWatcher(root: string): Promise<boolean> {
-    // Clear out the old tree
-    tree.reset();
-
     // Wait for new tree watcher to start
     return await invoke('initialise_tree_watcher', { root: root });
 }
 
+async function writeConfigFile(root: string, config: ConfigTree): Promise<string> {
+    return await invoke('write_config_file', { root: root, config: config });
+}
+
+async function readConfigFile(root: string): Promise<ConfigTree> {
+    return await invoke('read_config_file', { root: root });
+}
+
 /*-------------------------------- Exports -----------------------------------*/
 
-export { pickDirectory, initialiseTreeWatcher };
+export { pickDirectory, initialiseTreeWatcher, readConfigFile, writeConfigFile };

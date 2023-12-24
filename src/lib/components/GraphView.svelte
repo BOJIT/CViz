@@ -136,7 +136,8 @@
                     d3.forceLink(links).id((d) => d.id),
                 )
                 .force("charge", d3.forceManyBody())
-                .force("center", d3.forceCenter(width / 2, height / 2));
+                .force("center", d3.forceCenter(width / 2, height / 2))
+                .restart();
             simulationUpdate();
         }
     }

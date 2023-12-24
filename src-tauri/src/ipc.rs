@@ -35,3 +35,8 @@ pub enum FileChangeset {
     Added(FileMetdadata),
     Modified(FileMetdadata),
 }
+
+#[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
+pub struct ConfigTree {
+    pub syntax: u32,
+}

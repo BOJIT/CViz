@@ -63,6 +63,10 @@ function flatten(t: NestedTree, parent?: string, res: FlattenedTree = {}): Flatt
     return res;
 }
 
+function resolve(path: string): string | null {
+    return null;
+}
+
 function applyChangeset(cs: FileChangeset) {
     // Pre-flight checks
     const prefix = get(activeProject);
@@ -86,7 +90,7 @@ function applyChangeset(cs: FileChangeset) {
                         n = n.items[treeComponents[i]];  // by REF
                     }
 
-                    // Populate final node data (TODO)
+                    // Populate final node data
                     n.data = {
                         dependencies: cs.includes ? cs.includes : [],
                     };

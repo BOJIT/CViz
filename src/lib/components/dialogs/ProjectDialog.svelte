@@ -59,7 +59,6 @@
     }
 </script>
 
-<!-- TODO put in base dialogue -->
 <BaseDialog
     bind:visible
     persistent={Object.keys($projects).length === 0 || $activeProject === null}

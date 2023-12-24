@@ -3,9 +3,10 @@
 
 /* ----------------------------- Std/Cargo modules -------------------------- */
 
+use std::io::Write;
+
 use native_dialog::FileDialog;
 use notify::{RecursiveMode, Watcher};
-// use std::collections::HashMap;
 use tauri::Manager;
 use tokio::sync::mpsc;
 
@@ -24,6 +25,17 @@ struct AppState {
 }
 
 struct AppStateMutable(std::sync::Mutex<AppState>);
+
+/* ---------------------------------- Helpers ------------------------------- */
+
+fn create_default_config(mut f: &std::fs::File) -> Result<(), std::io::Error> {
+    // Write back syntax tag (bare file)
+    let config: ipc::ConfigTree = ipc::ConfigTree { syntax: 1 };
+    let yaml = serde_yaml::to_string(&config).unwrap();
+    f.write_all(yaml.as_bytes())?;
+
+    return Ok(());
+}
 
 /* ------------------------------- Tauri Commands --------------------------- */
 
@@ -56,6 +68,8 @@ fn initialise_tree_watcher(
     root: &str,
 ) {
     // TODO handle glob ignore patterns
+
+    // TODO do we need to watch the config file?
 
     // Fetch changesets initially for all C/C++ files
     let files = parse_file::utils::match_files(
@@ -110,11 +124,72 @@ fn initialise_tree_watcher(
     }
 }
 
+#[tauri::command]
+fn read_config_file(
+    app_handle: tauri::AppHandle,
+    _state: tauri::State<'_, AppStateMutable>,
+    root: &str,
+) {
+    let path_str = format!("{root}/.cviz.yaml");
+    let path = std::path::Path::new(&path_str);
+
+    let f = std::fs::File::open(path);
+    let f = match f {
+        Ok(f) => f,
+        Err(_e) => {
+            // Create blank config file if doesn't exist
+            let h = std::fs::File::create(path).unwrap();
+            create_default_config(&h).unwrap();
+
+            // Notify creation of config file
+            show_webview_dialog(
+                &app_handle,
+                &ipc::UINotification::Info(ipc::UINotificationMetdata {
+                    title: "Added .cviz.yaml".to_string(),
+                    message: "Config file added to project root".to_string(),
+                    timeout: Some(5),
+                }),
+            );
+
+            h
+        }
+    };
+
+    let data: ipc::ConfigTree = match serde_yaml::from_reader(f) {
+        Ok(d) => d,
+        Err(_e) => {
+            show_webview_dialog(
+                &app_handle,
+                &ipc::UINotification::Warning(ipc::UINotificationMetdata {
+                    title: "Invalid .cviz.yaml".to_string(),
+                    message: "Config file reset to default".to_string(),
+                    timeout: Some(5),
+                }),
+            );
+
+            let h = std::fs::File::create(path).unwrap();
+            create_default_config(&h).unwrap();
+
+            ipc::ConfigTree { syntax: 1 }
+        }
+    };
+
+    println!("{:?}", data);
+}
+
+#[tauri::command]
+fn write_config_file(
+    app_handle: tauri::AppHandle,
+    state: tauri::State<'_, AppStateMutable>,
+    root: &str,
+) {
+}
+
 /* -------------------------------- Tauri Events ---------------------------- */
 
-// fn show_webview_dialog(app_handle: tauri::AppHandle, message: &ipc::UINotification) {
-//     app_handle.emit_all("ui-notify", message).unwrap();
-// }
+fn show_webview_dialog(app_handle: &tauri::AppHandle, message: &ipc::UINotification) {
+    app_handle.emit_all("ui-notify", message).unwrap();
+}
 
 fn send_watcher_event<R: tauri::Runtime>(message: String, manager: &impl Manager<R>) {
     manager.emit_all("rs2js", message).unwrap();
@@ -145,13 +220,14 @@ fn main() {
             AppState {
                 directory_watcher: None,
                 // directory_channel: mpsc::channel(1),
-                // file_tree: HashMap::new(),
             }
             .into(),
         ))
         .invoke_handler(tauri::generate_handler![
             pick_directory,
-            initialise_tree_watcher
+            initialise_tree_watcher,
+            read_config_file,
+            write_config_file,
         ])
         .setup(|app| {
             let app_handle = app.handle();
