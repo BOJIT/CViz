@@ -20,6 +20,10 @@ import { activeProject } from "$lib/stores/projects";
 
 type NodeData = {
     dependencies: string[]
+};
+
+type FlattenedTree = {
+    [key: string]: NodeData,
 }
 
 export type NestedTree = {
@@ -41,6 +45,22 @@ async function init(): Promise<Writable<NestedTree>> {
 
 function reset(): void {
     store.set({});
+}
+
+function flatten(t: NestedTree, parent?: string, res: FlattenedTree = {}): FlattenedTree {
+    if (!(t.items)) return res;
+
+    Object.entries(t.items).forEach((n) => {
+        let name = parent ? parent + '/' + n[0] : n[0];
+        if (n[1].items) {
+            flatten(n[1], name, res);
+        } else {
+            if (n[1].data)
+                res[name] = n[1].data;
+        }
+    })
+
+    return res;
 }
 
 function applyChangeset(cs: FileChangeset) {
@@ -87,5 +107,6 @@ export default {
     update: store.update,
     init,
     reset,
+    flatten,
     applyChangeset,
 };

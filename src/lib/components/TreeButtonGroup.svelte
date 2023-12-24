@@ -79,7 +79,7 @@
         background-color: gray;
     }
 
-    .colpick {
+    /* .colpick {
         z-index: 30;
     }
 
@@ -91,5 +91,5 @@
     :global(.alpha) {
         width: 1rem !important;
         height: 1rem !important;
-    }
+    } */
 </style>

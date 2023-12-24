@@ -26,7 +26,8 @@
 
     // Stores
     import { projectOverlay, settingsOverlay } from "$lib/stores/overlays";
-    import projects, { activeProject } from "$lib/stores/projects";
+    import { activeProject } from "$lib/stores/projects";
+    import tree from "$lib/stores/tree";
 
     /*--------------------------------- Props --------------------------------*/
 
@@ -56,22 +57,24 @@
     /*-------------------------------- Methods -------------------------------*/
 
     // TEMP
-    import graph from "$lib/components/data";
-    // let graph: any = { nodes: [], links: [] };
+    // import graph from "$lib/components/data";
+
+    let graph: any = { nodes: [], links: [] };
 
     /*------------------------------- Lifecycle ------------------------------*/
 
     // Map store to graph nodes and edges
-    // tree.subscribe((t) => {
-    //     graph.nodes = Object.entries(t).map((n) => {
-    //         return {
-    //             id: n[0],
-    //             group: 1,
-    //         };
-    //     });
+    tree.subscribe((t) => {
+        let f = tree.flatten(t);
+        graph.nodes = Object.entries(f).map((n) => {
+            return {
+                id: n[0],
+                group: 1,
+            };
+        });
 
-    //     console.log(graph);
-    // });
+        console.log(graph);
+    });
 
     onMount(async () => {
         if ($activeProject === null) $projectOverlay = true;
