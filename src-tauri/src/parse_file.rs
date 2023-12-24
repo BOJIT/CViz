@@ -71,12 +71,7 @@ pub mod utils {
         return Some(metadata);
     }
 
-    pub async fn handle_directory_change(res: notify::Result<notify::Event>) -> ipc::FileChangeset {
-        let event = match res {
-            Ok(event) => event,
-            Err(_) => return ipc::FileChangeset::NoEvent, // Ignore watch errors for now
-        };
-
+    pub async fn handle_directory_change(event: &notify::Event) -> ipc::FileChangeset {
         // Is this a file we should care about?
         match event.paths[0].extension() {
             Some(ext) => {

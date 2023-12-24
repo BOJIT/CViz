@@ -71,10 +71,10 @@ function applyChangesets(changesets: FileChangeset[]) {
     store.update((s) => {
         // Pre-flight checks
         const prefix = get(activeProject);
-        if (prefix === null) return;
+        if (prefix === null) return s;
 
         changesets.forEach((cs) => {
-            if (!cs.key.startsWith(prefix)) return;
+            if (!cs.key.startsWith(prefix)) return s;
 
             switch (cs.type) {
                 case "added":
