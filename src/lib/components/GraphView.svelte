@@ -8,6 +8,22 @@
  *
 -->
 
+<script context="module" lang="ts">
+    /*--------------------------------- Types --------------------------------*/
+
+    interface Node extends SimulationNodeDatum {
+        id: string;
+        group: number;
+    }
+
+    interface Link extends SimulationLinkDatum<Node> {
+        source: Node;
+        target: Node;
+        value: number;
+    }
+    export { type Node, type Link };
+</script>
+
 <script lang="ts">
     /*-------------------------------- Imports -------------------------------*/
 
@@ -30,24 +46,6 @@
         SimulationNodeDatum,
         SimulationLinkDatum,
     } from "d3-force";
-
-    /*--------------------------------- Types --------------------------------*/
-
-    interface Node extends SimulationNodeDatum {
-        id: string;
-        group: number;
-    }
-
-    interface Link extends SimulationLinkDatum<Node> {
-        source: Node;
-        target: Node;
-        value: number;
-    }
-
-    type Graph = {
-        nodes: Node[];
-        links: Link[];
-    };
 
     /*--------------------------------- Props --------------------------------*/
 
@@ -77,10 +75,8 @@
     let transform = d3.zoomIdentity;
     let simulation: Simulation<Node, Link>;
 
-    let nodes: Node[] = [];
-    let links: Link[] = [];
-
-    export let graph: Graph;
+    export let nodes: Node[] = [];
+    export let links: Link[] = [];
 
     /*-------------------------------- Methods -------------------------------*/
 
@@ -131,8 +127,19 @@
 
     /*------------------------------- Lifecycle ------------------------------*/
 
-    $: links = graph.links.map((d) => Object.create(d));
-    $: nodes = graph.nodes.map((d) => Object.create(d));
+    $: {
+        if (simulation) {
+            simulation
+                .nodes(nodes)
+                .force(
+                    "link",
+                    d3.forceLink(links).id((d) => d.id),
+                )
+                .force("charge", d3.forceManyBody())
+                .force("center", d3.forceCenter(width / 2, height / 2));
+            simulationUpdate();
+        }
+    }
 
     onMount(() => {
         // Initial scale

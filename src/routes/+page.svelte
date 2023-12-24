@@ -19,7 +19,7 @@
 
     import logo from "$lib/assets/img/Logo.png";
     import GraphOverlay from "$lib/components/GraphOverlay.svelte";
-    import GraphView from "$lib/components/GraphView.svelte";
+    import GraphView, { type Node } from "$lib/components/GraphView.svelte";
     import KeyBindings from "$lib/components/KeyBindings.svelte";
     import ProjectDialog from "$lib/components/dialogs/ProjectDialog.svelte";
     import SettingsDialog from "$lib/components/dialogs/SettingsDialog.svelte";
@@ -59,21 +59,28 @@
     // TEMP
     // import graph from "$lib/components/data";
 
-    let graph: any = { nodes: [], links: [] };
+    // let graph: any = { nodes: [], links: [] };
+
+    let nodes: Node[] = [];
 
     /*------------------------------- Lifecycle ------------------------------*/
 
     // Map store to graph nodes and edges
     tree.subscribe((t) => {
         let f = tree.flatten(t);
-        graph.nodes = Object.entries(f).map((n) => {
-            return {
-                id: n[0],
-                group: 1,
-            };
+
+        // Add new/updated nodes to graph
+        Object.entries(f).forEach((n) => {
+            if (!nodes.some((s: Node) => s.id === n[0])) {
+                nodes.push({
+                    id: n[0],
+                    group: n[0].endsWith(".h") ? 2 : 1,
+                });
+            }
         });
 
-        console.log(graph);
+        // Prune any nodes no longer present
+        nodes = nodes.filter((n) => n.id in f);
     });
 
     onMount(async () => {
@@ -98,7 +105,7 @@
 
 {#if $activeProject !== null}
     <div class="graph-container">
-        <GraphView {graph} />
+        <GraphView {nodes} />
         <div class="graph-overlay">
             <GraphOverlay />
         </div>
