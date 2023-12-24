@@ -3,11 +3,12 @@
 
 /* ----------------------------- Std/Cargo modules -------------------------- */
 
-use std::{io::Write, thread::JoinHandle};
+use std::io::Write;
 
 use native_dialog::FileDialog;
 use notify::{RecursiveMode, Watcher};
 use tauri::Manager;
+use tokio::task::JoinSet;
 // use tokio::sync::mpsc;
 
 // Local Modules
@@ -74,17 +75,13 @@ async fn initialise_tree_watcher(
     );
 
     // Forward all initial parse requests to another thread
-    let mut tasks = Vec::with_capacity(files.len());
+    let mut set = JoinSet::new();
     for f in files.iter() {
-        tasks.push(tokio::spawn(parse_file::utils::parse_symbols(
-            String::from(f),
-        )));
+        set.spawn(parse_file::utils::parse_symbols(String::from(f)));
     }
 
-    // let mut outputs = Vec::with_capacity(tasks.len());
-    for task in tasks {
-        let meta = task.await.unwrap();
-
+    while let Some(res) = set.join_next().await {
+        let meta = res.unwrap();
         match meta {
             Some(m) => {
                 app_handle
