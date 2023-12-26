@@ -63,7 +63,29 @@ function flatten(t: NestedTree, parent?: string, res: FlattenedTree = {}): Flatt
     return res;
 }
 
-function resolve(path: string): string | null {
+/**
+ * @param path path of include in C/C++ file
+ * @returns a flattened path to a tree node (if found by the resolver)
+ * or null on failure to find.
+ */
+function resolve(path: string, tree: FlattenedTree, currentPath?: string, searchPaths?: string[]): string | null {
+
+    // Try relative to current path
+    if (`${currentPath}/${path}` in tree)
+        return `${currentPath}/${path}`;
+
+    // Try the include roots (in alphabetical order)
+    searchPaths?.forEach((p) => {
+        let p_trim = p.replace(/\/$/, "");
+        if (`${p_trim}/${path}` in tree)
+            return `${p_trim}/${path}`;
+    });
+
+    // Try from the root
+    // Try relative to current path
+    if (path in tree)
+        return path;
+
     return null;
 }
 
@@ -116,5 +138,6 @@ export default {
     init,
     reset,
     flatten,
+    resolve,
     applyChangesets,
 };

@@ -33,6 +33,7 @@
     } from "$lib/stores/overlays";
     import { activeProject } from "$lib/stores/projects";
     import tree from "$lib/stores/tree";
+    import config from "$lib/stores/config";
 
     /*--------------------------------- Props --------------------------------*/
 
@@ -82,6 +83,18 @@
                     group: n[0].endsWith(".h") ? 2 : 1,
                 });
             }
+
+            // Resolve dependencies
+            n[1].dependencies.forEach((i) => {
+                let target = tree.resolve(
+                    i,
+                    f,
+                    n[0].slice(0, n[0].lastIndexOf("/")),
+                    $config.includeRoots,
+                );
+
+                console.log(`${i}: ${target}`);
+            });
         });
 
         // Prune any nodes no longer present

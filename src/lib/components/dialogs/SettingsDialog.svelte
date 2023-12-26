@@ -121,10 +121,6 @@
 
     /*------------------------------- Lifecycle ------------------------------*/
 
-    config.subscribe((v) => {
-        console.log(v);
-    });
-
     $: if (visible) {
         index = 0;
     }
