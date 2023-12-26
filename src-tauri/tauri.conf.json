@@ -65,6 +65,7 @@
             {
                 "fullscreen": false,
                 "resizable": true,
+                "maximized": true,
                 "title": "CViz"
             }
         ]

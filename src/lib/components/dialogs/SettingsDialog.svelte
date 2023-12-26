@@ -12,8 +12,14 @@
     /*-------------------------------- Imports -------------------------------*/
 
     import { message } from "@bojit/svelte-components/core";
-    import { IconButton, TextIconButton } from "@bojit/svelte-components/form";
+    import {
+        AddableList,
+        IconButton,
+        SearchableList,
+        TextIconButton,
+    } from "@bojit/svelte-components/form";
     import { BaseDialog } from "@bojit/svelte-components/layout";
+    import { TextField } from "@bojit/svelte-components/smelte";
     import { Tabs } from "@bojit/svelte-components/widgets";
     import theme from "@bojit/svelte-components/theme";
     const mode = theme.Mode;
@@ -28,6 +34,7 @@
         Warning,
     } from "@svicons/ionicons-outline";
 
+    import config from "$lib/stores/config";
     import settings from "$lib/stores/settings";
 
     import Logo from "$lib/assets/img/BOJIT_Square.png";
@@ -87,7 +94,20 @@
         }
     }
 
+    function toKeyed(ss: string[] | undefined): any {
+        let o: any = {};
+        if (!ss) return o;
+        ss.forEach((s) => {
+            o[s] = {};
+        });
+        return o;
+    }
+
     /*------------------------------- Lifecycle ------------------------------*/
+
+    config.subscribe((v) => {
+        console.log(v);
+    });
 
     $: if (visible) {
         index = 0;
@@ -102,6 +122,29 @@
         <div class="tab">
             <h5>Project Settings</h5>
             <hr />
+
+            <div class="long-page">
+                <!-- Project Include Roots -->
+                <br />
+                <code>Include Paths</code>
+                <hr />
+                <AddableList
+                    items={toKeyed($config.includeRoots)}
+                    maxHeight="10rem"
+                />
+
+                <!-- Project Include Roots -->
+                <br />
+                <code>Blacklist</code>
+                <hr />
+                <AddableList items={{}} maxHeight="10rem" />
+
+                <!-- Project Groups-->
+                <br />
+                <code>Groups</code>
+                <hr />
+                <AddableList items={{}} maxHeight="10rem" />
+            </div>
         </div>
 
         <!-- Global -->
@@ -243,6 +286,11 @@
         display: flex;
         gap: 0.5rem;
         align-items: center;
+    }
+
+    .long-page {
+        max-height: 60vh;
+        overflow: scroll;
     }
 
     img {

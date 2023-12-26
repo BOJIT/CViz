@@ -10,7 +10,10 @@
 
 /*-------------------------------- Imports -----------------------------------*/
 
+import { readConfigFile } from "$lib/utils/commands";
 import { writable, type Writable } from "svelte/store";
+
+import { activeProject } from "./projects";
 
 /*--------------------------------- Types ------------------------------------*/
 
@@ -22,8 +25,8 @@ type Group = {
 
 export type ConfigTree = {
     syntax: number,
-    ignoreList?: string[],
     includeRoots?: string[],
+    ignoreList?: string[],
     groups?: Group[]
 };
 

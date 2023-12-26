@@ -15,6 +15,7 @@ import { writable, type Writable } from "svelte/store";
 import localForage from "localforage";
 
 import tree from '$lib/stores/tree';
+import configTree from "$lib/stores/config";
 import { initialiseTreeWatcher, readConfigFile } from "$lib/utils/commands";
 import { loadingOverlay } from "$lib/stores/overlays";
 
@@ -66,7 +67,7 @@ async function init(): Promise<Writable<ProjectStore>> {
         tree.reset();
 
         // Read new config file and load new project
-        await readConfigFile(val);
+        configTree.set(await readConfigFile(val));
         await initialiseTreeWatcher(val);
 
         loadingOverlay.set(false);

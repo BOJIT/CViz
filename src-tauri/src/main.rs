@@ -142,7 +142,7 @@ async fn initialise_tree_watcher(
 }
 
 #[tauri::command]
-fn read_config_file(app_handle: tauri::AppHandle, root: &str) {
+fn read_config_file(app_handle: tauri::AppHandle, root: &str) -> ipc::ConfigTree {
     let path_str = format!("{root}/.cviz.yaml");
     let path = std::path::Path::new(&path_str);
 
@@ -186,6 +186,8 @@ fn read_config_file(app_handle: tauri::AppHandle, root: &str) {
             ipc::ConfigTree { syntax: 1 }
         }
     };
+
+    return data;
 }
 
 #[tauri::command]
