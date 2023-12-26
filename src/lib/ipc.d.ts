@@ -27,4 +27,17 @@ export type UINotification = {
     timeout?: number,
 };
 
+type Group = {
+    name: string,
+    colour?: string,
+    path: string,
+};
+
+export type ConfigTree = {
+    syntax: number,
+    includeRoots?: string[],
+    ignoreList?: string[],
+    // groups?: Group[]
+};
+
 /*-------------------------------- Exports -----------------------------------*/

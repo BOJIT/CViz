@@ -39,6 +39,12 @@
 
     import Logo from "$lib/assets/img/BOJIT_Square.png";
 
+    /*--------------------------------- Types --------------------------------*/
+
+    type KeyedList = {
+        [key: string]: {};
+    };
+
     /*--------------------------------- Props --------------------------------*/
 
     export let visible: boolean = true;
@@ -94,13 +100,23 @@
         }
     }
 
-    function toKeyed(ss: string[] | undefined): any {
+    function toKeyed(ss: string[] | undefined): KeyedList {
         let o: any = {};
         if (!ss) return o;
         ss.forEach((s) => {
             o[s] = {};
         });
         return o;
+    }
+
+    function fromKeyed(o: KeyedList): string[] {
+        let ss: string[] = [];
+        Object.keys(o)
+            .sort()
+            .forEach((k) => {
+                ss.push(k);
+            });
+        return ss;
     }
 
     /*------------------------------- Lifecycle ------------------------------*/
@@ -131,13 +147,28 @@
                 <AddableList
                     items={toKeyed($config.includeRoots)}
                     maxHeight="10rem"
+                    on:change={(e) => {
+                        config.update((c) => {
+                            c.includeRoots = fromKeyed(e.detail);
+                            return c;
+                        });
+                    }}
                 />
 
                 <!-- Project Include Roots -->
                 <br />
-                <code>Blacklist</code>
+                <code>Ignore List</code>
                 <hr />
-                <AddableList items={{}} maxHeight="10rem" />
+                <AddableList
+                    items={toKeyed($config.ignoreList)}
+                    maxHeight="10rem"
+                    on:change={(e) => {
+                        config.update((c) => {
+                            c.ignoreList = fromKeyed(e.detail);
+                            return c;
+                        });
+                    }}
+                />
 
                 <!-- Project Groups-->
                 <br />

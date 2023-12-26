@@ -27,13 +27,18 @@ struct AppState {
 
 /* ---------------------------------- Helpers ------------------------------- */
 
-fn create_default_config(mut f: &std::fs::File) -> Result<(), std::io::Error> {
+fn create_default_config(mut f: &std::fs::File) -> Result<ipc::ConfigTree, std::io::Error> {
     // Write back syntax tag (bare file)
-    let config: ipc::ConfigTree = ipc::ConfigTree { syntax: 1 };
+    let config: ipc::ConfigTree = ipc::ConfigTree {
+        syntax: 1,
+        include_roots: None,
+        ignore_list: None,
+    };
+
     let yaml = serde_yaml::to_string(&config).unwrap();
     f.write_all(yaml.as_bytes())?;
 
-    return Ok(());
+    return Ok(config);
 }
 
 /* ------------------------------- Tauri Commands --------------------------- */
@@ -181,9 +186,9 @@ fn read_config_file(app_handle: tauri::AppHandle, root: &str) -> ipc::ConfigTree
             );
 
             let h = std::fs::File::create(path).unwrap();
-            create_default_config(&h).unwrap();
+            let config = create_default_config(&h).unwrap();
 
-            ipc::ConfigTree { syntax: 1 }
+            config
         }
     };
 
@@ -191,7 +196,47 @@ fn read_config_file(app_handle: tauri::AppHandle, root: &str) -> ipc::ConfigTree
 }
 
 #[tauri::command]
-fn write_config_file(app_handle: tauri::AppHandle, root: &str) {}
+fn write_config_file(app_handle: tauri::AppHandle, root: &str, config: ipc::ConfigTree) {
+    let path_str = format!("{root}/.cviz.yaml");
+    let path = std::path::Path::new(&path_str);
+
+    let f = std::fs::File::create(path);
+    let mut f = match f {
+        Ok(f) => f,
+        Err(_e) => {
+            // Notify write failure
+            show_webview_dialog(
+                &app_handle,
+                &ipc::UINotification::Error(ipc::UINotificationMetdata {
+                    title: "Could not save .cviz.yaml".to_string(),
+                    message: "Config file could not be opened!".to_string(),
+                    timeout: None,
+                }),
+            );
+
+            return;
+        }
+    };
+
+    // Write to disk: note that we control the config structure so serialisation should never fail
+    let yaml = serde_yaml::to_string(&config).unwrap();
+    let res = f.write_all(yaml.as_bytes());
+    match res {
+        Ok(_) => (),
+        Err(_e) => {
+            println!("ERR: {:?}", _e);
+            // Notify write failure
+            show_webview_dialog(
+                &app_handle,
+                &ipc::UINotification::Error(ipc::UINotificationMetdata {
+                    title: "Could not save .cviz.yaml".to_string(),
+                    message: "Config file could not be updated!".to_string(),
+                    timeout: None,
+                }),
+            );
+        }
+    };
+}
 
 /* -------------------------------- Tauri Events ---------------------------- */
 

@@ -36,7 +36,11 @@ pub enum FileChangeset {
     Modified(FileMetdadata),
 }
 
+#[serde_with::skip_serializing_none]
 #[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct ConfigTree {
     pub syntax: u32,
+    pub include_roots: Option<Vec<String>>,
+    pub ignore_list: Option<Vec<String>>,
 }

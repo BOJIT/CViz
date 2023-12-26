@@ -10,13 +10,13 @@
 
 /*-------------------------------- Imports -----------------------------------*/
 
-import { writable, type Writable } from "svelte/store";
+import { get, writable, type Writable } from "svelte/store";
 
 import localForage from "localforage";
 
 import tree from '$lib/stores/tree';
 import configTree from "$lib/stores/config";
-import { initialiseTreeWatcher, readConfigFile } from "$lib/utils/commands";
+import { initialiseTreeWatcher, readConfigFile, writeConfigFile } from "$lib/utils/commands";
 import { loadingOverlay } from "$lib/stores/overlays";
 
 /*--------------------------------- Types ------------------------------------*/
@@ -71,6 +71,14 @@ async function init(): Promise<Writable<ProjectStore>> {
         await initialiseTreeWatcher(val);
 
         loadingOverlay.set(false);
+    });
+
+    // Project config files are written back to disk on changes.
+    configTree.subscribe(async (c) => {
+        let p = get(activeProject);
+        if (p === null) return;
+        // Note this will result in one redundant write-back on project changes
+        await writeConfigFile(p, c);
     });
 
     return store;

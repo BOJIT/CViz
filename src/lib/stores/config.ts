@@ -10,25 +10,9 @@
 
 /*-------------------------------- Imports -----------------------------------*/
 
-import { readConfigFile } from "$lib/utils/commands";
 import { writable, type Writable } from "svelte/store";
 
-import { activeProject } from "./projects";
-
-/*--------------------------------- Types ------------------------------------*/
-
-type Group = {
-    name: string,
-    colour?: string,
-    path: string,
-};
-
-export type ConfigTree = {
-    syntax: number,
-    includeRoots?: string[],
-    ignoreList?: string[],
-    groups?: Group[]
-};
+import type { ConfigTree } from "$lib/ipc";
 
 /*--------------------------------- State ------------------------------------*/
 
