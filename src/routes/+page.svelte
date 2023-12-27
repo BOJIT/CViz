@@ -93,7 +93,7 @@
                     $config.includeRoots,
                 );
 
-                console.log(`${i}: ${target}`);
+                // console.log(`${i}: ${target}`);
             });
         });
 

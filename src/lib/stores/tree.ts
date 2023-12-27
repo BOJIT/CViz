@@ -75,14 +75,11 @@ function resolve(path: string, tree: FlattenedTree, currentPath?: string, search
         return `${currentPath}/${path}`;
 
     // Try the include roots (in alphabetical order)
-    searchPaths?.forEach((p) => {
-        let p_trim = p.replace(/\/$/, "");
-        if (`${p_trim}/${path}` in tree)
-            return `${p_trim}/${path}`;
-    });
+    let matches = searchPaths?.map((p) => p.replace(/\/$/, ""))
+        .filter((p) => (`${p}/${path}` in tree)).map((p) => `${p}/${path}`);
+    if (matches?.length) return matches[0];
 
     // Try from the root
-    // Try relative to current path
     if (path in tree)
         return path;
 
