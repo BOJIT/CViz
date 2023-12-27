@@ -115,11 +115,12 @@
     /**
      * Must be called when the nodes/links change
      */
-    function updateGraph() {
+    function updateGraph(n: Node[], l: Link[]) {
         // Re-run D3 simulation
         if (simulation === undefined) return;
         simulation.nodes(nodes).force("link").links(links);
         simulation.alphaTarget(0.5).restart();
+        simulation.on("tick", () => updatePositions());
 
         nodeDataGfxPairs = [];
         nodes.forEach((node) => {
@@ -248,7 +249,7 @@
 
     /*------------------------------- Lifecycle ------------------------------*/
 
-    $: updateGraph();
+    $: updateGraph(nodes, links);
 
     onMount(() => {
         // Size initial container and mount PIXI.js
@@ -362,7 +363,7 @@
             .on("tick", () => updatePositions());
 
         // Initial update (if data already populated)
-        updateGraph();
+        updateGraph(nodes, links);
     });
 </script>
 

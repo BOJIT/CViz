@@ -139,8 +139,8 @@
 
 {#if $activeProject !== null}
     <div class="graph-container">
-        <!-- <GraphView {nodes} {links} /> -->
-        <GraphViewWebGl {nodes} {links} />
+        <GraphView {nodes} {links} />
+        <!-- <GraphViewWebGl {nodes} {links} /> -->
         <div class="graph-overlay">
             <GraphOverlay />
         </div>
