@@ -99,12 +99,8 @@
                 );
 
                 if (target === null) return; // TODO mark stdlib
-                let targetNode = nodes.find((s) => s.id === target);
 
-                if (sourceNode === undefined) return;
-                if (targetNode === undefined) return;
-
-                let link = { source: sourceNode, target: targetNode, value: 5 };
+                let link = { source: n[0], target: target, value: 5 };
                 newLinks.push(link);
             });
         });
