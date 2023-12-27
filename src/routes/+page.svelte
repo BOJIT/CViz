@@ -24,6 +24,7 @@
         type Node,
         type Link,
     } from "$lib/components/GraphView.svelte";
+    import GraphViewWebGl from "$lib/components/GraphViewWebGL.svelte";
     import KeyBindings from "$lib/components/KeyBindings.svelte";
     import ProjectDialog from "$lib/components/dialogs/ProjectDialog.svelte";
     import SettingsDialog from "$lib/components/dialogs/SettingsDialog.svelte";
@@ -138,7 +139,8 @@
 
 {#if $activeProject !== null}
     <div class="graph-container">
-        <GraphView {nodes} {links} />
+        <!-- <GraphView {nodes} {links} /> -->
+        <GraphViewWebGl {nodes} {links} />
         <div class="graph-overlay">
             <GraphOverlay />
         </div>

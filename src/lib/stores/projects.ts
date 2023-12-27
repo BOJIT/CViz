@@ -79,6 +79,9 @@ async function init(): Promise<Writable<ProjectStore>> {
         if (p === null) return;
         // Note this will result in one redundant write-back on project changes
         await writeConfigFile(p, c);
+
+        // Force tree to re-compute
+        tree.update((t) => t);
     });
 
     return store;
