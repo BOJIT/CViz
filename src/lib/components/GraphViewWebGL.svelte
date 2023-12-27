@@ -89,6 +89,9 @@
     let linkDataToLinkGfx = new WeakMap();
     let linkGfxToLinkData = new WeakMap();
 
+    let nodeDataGfxPairs: any[] = [];
+    let linkDataGfxPairs: any[] = [];
+
     // PIXI graphics storage
     const linksLayer = new PIXI.Container();
     const nodesLayer = new PIXI.Container();
@@ -98,21 +101,30 @@
 
     // Styling
     const nodeRadius = 10;
+    const nodeFill = 0xffffff;
+    const nodeStrokeWidth = 2;
+    const nodeStrokeOpacity = 0.8;
+    const nodeStroke = 0xff00ff;
+    const linkStroke = 0x00ff00;
+    const linkStrokeWidth = 2;
+    const linkStrokeOpacity = 0.8;
+    const labelFill = 0xffff00;
 
     /*-------------------------------- Methods -------------------------------*/
 
-    function update() {
+    /**
+     * Must be called when the nodes/links change
+     */
+    function updateGraph() {
         // Re-run D3 simulation
         if (simulation === undefined) return;
         simulation.nodes(nodes).force("link").links(links);
         simulation.alphaTarget(0.5).restart();
 
-        let nodeDataGfxPairs = [];
-        for (let i = 0; i < nodes.length; i++) {
-            let nodeData = nodes[i];
-
+        nodeDataGfxPairs = [];
+        nodes.forEach((node) => {
             let nodeGfx = new PIXI.Container();
-            nodeGfx.name = nodeData.id;
+            nodeGfx.name = node.id;
             nodeGfx.cursor = "pointer";
             nodeGfx.hitArea = new PIXI.Circle(0, 0, nodeRadius + 2);
             nodeGfx.eventMode = "static";
@@ -122,7 +134,7 @@
             circle.name = "CIRCLE";
             circle.x = -nodeRadius;
             circle.y = -nodeRadius;
-            circle.tint = nodeData.color;
+            circle.tint = nodeFill; // TODO based on group?
             circle.alpha = 1;
             circle.width = nodeRadius * 2;
             circle.height = nodeRadius * 2;
@@ -136,12 +148,12 @@
             const textStyle = new PIXI.TextStyle({
                 fontSize: nodeRadius * 2,
                 align: "left",
-                fill: labelColor,
+                fill: labelFill,
                 stroke: "black",
                 strokeThickness: 6,
             });
 
-            const label = new PIXI.Text(nodeData.NAME, textStyle);
+            const label = new PIXI.Text(node.id, textStyle);
             label.name = "LABEL";
             label.x = nodeRadius + 3; // position label next to node without overlap
             label.y = -nodeRadius;
@@ -151,16 +163,15 @@
             labelGfx.addChild(label);
             labelsLayer.addChild(labelGfx);
 
-            nodeDataGfxPairs.push([nodeData, nodeGfx, labelGfx]);
-        }
+            nodeDataGfxPairs.push([node, nodeGfx, labelGfx]);
+        });
 
-        let linkDataGfxPairs = [];
-        for (let i = 0; i < links.length; i++) {
-            let linkData = links[i];
-            const lineSize = linkData.linkStrokeWidth;
+        linkDataGfxPairs = [];
+        links.forEach((link) => {
+            const lineSize = linkStrokeWidth;
 
             const linkGfx = new PIXI.Container();
-            linkGfx.name = getSourceId(linkData) + "-" + getTargetId(linkData);
+            linkGfx.name = link.source.id + "-" + link.target.id;
             linkGfx.pivot.set(0, lineSize / 2);
             linkGfx.alpha = linkStrokeOpacity;
 
@@ -180,28 +191,66 @@
             arrow.height = 6;
             arrow.alpha = 0;
             linkGfx.addChild(arrow);
-
             linksLayer.addChild(linkGfx);
 
-            linkDataGfxPairs.push([linkData, linkGfx]);
-        }
+            linkDataGfxPairs.push([link, linkGfx]);
+        });
+    }
+
+    /**
+     * This should be called to run the force simulation
+     */
+    function updatePositions() {
+        nodes.forEach((node) => {
+            const nodeGfx = nodeDataToNodeGfx.get(node);
+            const labelGfx = nodeDataToLabelGfx.get(node);
+
+            if (nodeGfx === undefined || labelGfx === undefined) return;
+
+            console.log(node);
+
+            nodeGfx.x = node.x;
+            nodeGfx.y = node.y;
+            labelGfx.x = node.x;
+            labelGfx.y = node.y;
+        });
+
+        links.forEach((link) => {
+            const sourceNodeData = nodes.find((n) => n.id === link.source.id);
+            const targetNodeData = nodes.find((n) => n.id === link.target.id);
+            const linkGfx = linkDataToLinkGfx.get(link);
+
+            if (
+                sourceNodeData === undefined ||
+                targetNodeData === undefined ||
+                linkGfx === undefined
+            )
+                return;
+
+            linkGfx.x = sourceNodeData.x;
+            linkGfx.y = sourceNodeData.y;
+            linkGfx.rotation = Math.atan2(
+                targetNodeData.y - sourceNodeData.y,
+                targetNodeData.x - sourceNodeData.x,
+            );
+
+            const line = linkGfx.getChildByName("LINE");
+            const lineLength = Math.max(
+                Math.sqrt(
+                    (targetNodeData.x - sourceNodeData.x) ** 2 +
+                        (targetNodeData.y - sourceNodeData.y) ** 2,
+                ) - targetNodeData.radius,
+                0,
+            );
+            line.width = lineLength;
+        });
     }
 
     /*------------------------------- Lifecycle ------------------------------*/
 
-    onMount(() => {
-        // D3 Simulation
-        simulation = d3
-            .forceSimulation()
-            .force(
-                "link",
-                d3.forceLink().id((d) => d.id),
-            )
-            .force(
-                "charge",
-                d3.forceManyBody().strength(-100).distanceMin(100),
-            );
+    $: updateGraph();
 
+    onMount(() => {
         // Size initial container and mount PIXI.js
         width = container.offsetWidth;
         height = container.offsetHeight;
@@ -302,8 +351,18 @@
             linkDataGfxPairs.map(([linkData, linkGfx]) => [linkGfx, linkData]),
         );
 
+        // D3 Simulation
+        simulation = d3
+            .forceSimulation()
+            .force(
+                "link",
+                d3.forceLink().id((d) => d.id),
+            )
+            .force("charge", d3.forceManyBody().strength(-100).distanceMin(100))
+            .on("tick", () => updatePositions());
+
         // Initial update (if data already populated)
-        update();
+        updateGraph();
     });
 </script>
 
