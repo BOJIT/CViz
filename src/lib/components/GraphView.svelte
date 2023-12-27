@@ -133,7 +133,10 @@
                 .nodes(nodes)
                 .force(
                     "link",
-                    d3.forceLink(links).id((d) => d.id),
+                    d3
+                        .forceLink(links)
+                        .id((d) => d.id)
+                        .distance(50),
                 )
                 .force("charge", d3.forceManyBody())
                 .force("center", d3.forceCenter(width / 2, height / 2));
@@ -150,7 +153,10 @@
             .forceSimulation(nodes)
             .force(
                 "link",
-                d3.forceLink(links).id((d) => d.id),
+                d3
+                    .forceLink(links)
+                    .id((d) => d.id)
+                    .distance(50),
             )
             .force("charge", d3.forceManyBody())
             .force("center", d3.forceCenter(width / 2, height / 2))
@@ -180,17 +186,39 @@
 <!-- SVG was here -->
 <div class="container" bind:this={container}>
     <svg bind:this={svg} {width} {height}>
+        <defs>
+            <marker
+                id="head"
+                orient="auto-start-reverse"
+                markerWidth="20"
+                markerHeight="20"
+                refX="11"
+                refY="2"
+            >
+                <path d="M0,0 V4 L5,2 Z" fill="#999" />
+            </marker>
+        </defs>
+
         {#each links as link}
-            <g stroke="#999" stroke-opacity="0.6">
+            <g stroke="#999" stroke-opacity="1">
                 <line
                     x1={link.source.x}
                     y1={link.source.y}
                     x2={link.target.x}
                     y2={link.target.y}
+                    marker-start="url(#head)"
                     transform="translate({transform.x} {transform.y}) scale({transform.k} {transform.k})"
                 >
                     <title>{link.source.id}</title>
                 </line>
+                <!-- <path
+                    id="arrow-line"
+                    marker-end="url(#head)"
+                    stroke-width="4"
+                    fill="none"
+                    stroke="black"
+                    d="M0,0, 80 100,120"
+                /> -->
             </g>
         {/each}
 

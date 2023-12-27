@@ -20,7 +20,10 @@
 
     import logo from "$lib/assets/img/Logo.png";
     import GraphOverlay from "$lib/components/GraphOverlay.svelte";
-    import GraphView, { type Node } from "$lib/components/GraphView.svelte";
+    import GraphView, {
+        type Node,
+        type Link,
+    } from "$lib/components/GraphView.svelte";
     import KeyBindings from "$lib/components/KeyBindings.svelte";
     import ProjectDialog from "$lib/components/dialogs/ProjectDialog.svelte";
     import SettingsDialog from "$lib/components/dialogs/SettingsDialog.svelte";
@@ -65,23 +68,25 @@
     // TEMP
     // import graph from "$lib/components/data";
 
-    // let graph: any = { nodes: [], links: [] };
-
     let nodes: Node[] = [];
+    let links: Link[] = [];
 
     /*------------------------------- Lifecycle ------------------------------*/
 
     // Map store to graph nodes and edges
     tree.subscribe((t) => {
         let f = tree.flatten(t);
+        let newLinks: Link[] = [];
 
         // Add new/updated nodes to graph
         Object.entries(f).forEach((n) => {
+            let sourceNode: Node | undefined = undefined;
             if (!nodes.some((s: Node) => s.id === n[0])) {
-                nodes.push({
+                sourceNode = {
                     id: n[0],
                     group: n[0].endsWith(".h") ? 2 : 1,
-                });
+                };
+                nodes.push(sourceNode);
             }
 
             // Resolve dependencies
@@ -93,12 +98,22 @@
                     $config.includeRoots,
                 );
 
-                // console.log(`${i}: ${target}`);
+                if (target === null) return; // TODO mark stdlib
+                let targetNode = nodes.find((s) => s.id === target);
+
+                if (sourceNode === undefined) return;
+                if (targetNode === undefined) return;
+
+                let link = { source: sourceNode, target: targetNode, value: 5 };
+                newLinks.push(link);
             });
         });
 
         // Prune any nodes no longer present
         nodes = nodes.filter((n) => n.id in f);
+
+        // Update to latest link copy
+        links = newLinks;
     });
 
     onMount(async () => {
@@ -123,7 +138,7 @@
 
 {#if $activeProject !== null}
     <div class="graph-container">
-        <GraphView {nodes} />
+        <GraphView {nodes} {links} />
         <div class="graph-overlay">
             <GraphOverlay />
         </div>

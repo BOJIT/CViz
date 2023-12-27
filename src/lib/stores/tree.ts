@@ -69,7 +69,6 @@ function flatten(t: NestedTree, parent?: string, res: FlattenedTree = {}): Flatt
  * or null on failure to find.
  */
 function resolve(path: string, tree: FlattenedTree, currentPath?: string, searchPaths?: string[]): string | null {
-
     // Try relative to current path
     if (`${currentPath}/${path}` in tree)
         return `${currentPath}/${path}`;
@@ -93,6 +92,7 @@ function applyChangesets(changesets: FileChangeset[]) {
         if (prefix === null) return s;
 
         changesets.forEach((cs) => {
+            if (cs.type === "no_event") return;
             if (!cs.key.startsWith(prefix)) return s;
 
             switch (cs.type) {

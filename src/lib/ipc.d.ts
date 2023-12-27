@@ -15,7 +15,7 @@
 /*--------------------------------- Types ------------------------------------*/
 
 export type FileChangeset = {
-    type: "removed" | "renamed" | "added" | "modified",
+    type: "removed" | "renamed" | "added" | "modified" | "no_event",
     key: string,
     includes?: string[]
 }
