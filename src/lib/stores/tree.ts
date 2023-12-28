@@ -37,6 +37,8 @@ export type NestedTree = {
 
 const store: Writable<NestedTree> = writable({});
 
+const selectedNode: Writable<string | null> = writable(null);
+
 /*------------------------------- Functions ----------------------------------*/
 
 async function init(): Promise<Writable<NestedTree>> {
@@ -138,3 +140,5 @@ export default {
     resolve,
     applyChangesets,
 };
+
+export { selectedNode };

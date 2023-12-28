@@ -39,9 +39,11 @@
         type NodeObject,
     } from "force-graph";
 
+    import { activeProject } from "$lib/stores/projects";
+    import { selectedNode } from "$lib/stores/tree";
+
     /*--------------------------------- Props --------------------------------*/
 
-    const nodeRadius = 6;
     let container: HTMLDivElement;
 
     export let nodes: NodeObject[] = [];
@@ -54,9 +56,20 @@
 
     let graph: ForceGraphInstance;
 
+    const headerExtensions: string[] = [".h", ".hpp", ".hh", ".h++"];
+
     /*-------------------------------- Methods -------------------------------*/
 
+    function recenter() {
+        graph?.zoomToFit(2000, 200);
+    }
+
     /*------------------------------- Lifecycle ------------------------------*/
+
+    activeProject.subscribe((p) => {
+        // On change re-center the graph after a delay
+        setTimeout(recenter, 200);
+    });
 
     $: {
         data.nodes = [...nodes];
@@ -67,10 +80,47 @@
     onMount(() => {
         graph = ForceGraph();
         graph(container).graphData(data);
+
+        // Root styling
+        graph
+            .linkColor(() => "rgba(255,255,255,0.2)")
+            .linkWidth(() => 2)
+            .dagMode("td")
+            .dagLevelDistance(40)
+            .linkDirectionalParticles(2)
+            .linkDirectionalParticleSpeed(0.005)
+            .linkDirectionalParticleWidth(3)
+            .nodeLabel((n) => n.id as string)
+            .nodeColor((n) => {
+                let id: string = n.id as string;
+                let isHeader = headerExtensions.some((h) => id.endsWith(h));
+
+                if ($selectedNode === n.id) return "#EDB120";
+
+                // TODO add group colour override
+                return isHeader ? "#0072BD" : "#D95319";
+            });
+
+        // Events
+        graph.onNodeClick((n, e) => {
+            if (n.id) selectedNode.set(n.id as string);
+        });
     });
 </script>
 
-<!-- SVG was here -->
+<svelte:window
+    on:resize={() => {
+        // Resize underlying canvas
+        let canvas = container.querySelector("canvas");
+        if (!canvas) return;
+
+        canvas.style.width = container.offsetWidth.toString();
+        canvas.style.height = container.offsetHeight.toString();
+
+        setTimeout(recenter, 200);
+    }}
+/>
+
 <div class="container" bind:this={container}></div>
 
 <style>

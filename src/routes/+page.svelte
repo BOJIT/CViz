@@ -100,7 +100,7 @@
 
                 if (target === null) return; // TODO mark stdlib
 
-                let link = { source: n[0], target: target, value: 5 };
+                let link = { source: target, target: n[0], value: 5 };
                 newLinks.push(link);
             });
         });

@@ -14,7 +14,7 @@ import { get, writable, type Writable } from "svelte/store";
 
 import localForage from "localforage";
 
-import tree from '$lib/stores/tree';
+import tree, { selectedNode } from '$lib/stores/tree';
 import configTree from "$lib/stores/config";
 import { initialiseTreeWatcher, readConfigFile, writeConfigFile } from "$lib/utils/commands";
 import { loadingOverlay } from "$lib/stores/overlays";
@@ -63,7 +63,8 @@ async function init(): Promise<Writable<ProjectStore>> {
         // Show loading scrim
         loadingOverlay.set(true);
 
-        // Clear out the old tree
+        // Deselect focused node and clear out the old tree
+        selectedNode.set(null);
         tree.reset();
 
         // Read new config file and load new project
