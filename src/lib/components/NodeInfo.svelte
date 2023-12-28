@@ -59,7 +59,9 @@
             <code class="dependency"> - {d}</code>
         {/each}
     {:else}
-        <h5 class="unselected">[No Node Selected]</h5>
+        <div class="center-container">
+            <h5 class="unselected">[No Node Selected]</h5>
+        </div>
     {/if}
 </div>
 
@@ -71,10 +73,15 @@
 
         padding: 1rem;
 
-        /* display: grid;
-        place-items: center; */
-
         background-color: #1d1d1df1;
+    }
+
+    .center-container {
+        width: 100%;
+        height: 100%;
+
+        display: grid;
+        place-items: center;
     }
 
     .unselected {

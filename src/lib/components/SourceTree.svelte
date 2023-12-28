@@ -14,7 +14,7 @@
     import TreeView from "$lib/components/TreeView.svelte";
     import TreeButtonGroup from "$lib/components/TreeButtonGroup.svelte";
 
-    import tree, { type NestedTree } from "$lib/stores/tree";
+    import tree, { selectedNode, type NestedTree } from "$lib/stores/tree";
 
     import { Document } from "@svicons/ionicons-outline";
 
@@ -22,6 +22,7 @@
 
     type TreeViewEntry = {
         text: string;
+        path?: string;
         items?: TreeViewEntry[];
     };
 
@@ -29,7 +30,11 @@
 
     /*-------------------------------- Methods -------------------------------*/
 
-    function pushTreeEntry(tv: TreeViewEntry[], t: NestedTree) {
+    function pushTreeEntry(
+        tv: TreeViewEntry[],
+        t: NestedTree,
+        currentPath: string = "",
+    ) {
         if (t.items) {
             Object.entries(t.items)
                 .sort((a: [string, NestedTree], b: [string, NestedTree]) => {
@@ -44,8 +49,15 @@
                     return 0;
                 })
                 .forEach((n) => {
-                    const entry: TreeViewEntry = { text: n[0] };
-                    const items = pushTreeEntry([], n[1]);
+                    const entry: TreeViewEntry = {
+                        text: n[0],
+                        path: `${currentPath}/${n[0]}`,
+                    };
+                    const items = pushTreeEntry(
+                        [],
+                        n[1],
+                        currentPath === "" ? n[0] : `${currentPath}/${n[0]}`,
+                    );
                     if (items.length > 0) entry.items = items;
 
                     tv.push(entry);
@@ -59,7 +71,16 @@
 </script>
 
 <div class="container">
-    <TreeView items={pushTreeEntry([], $tree)} dense let:item>
+    <TreeView
+        items={pushTreeEntry([], $tree)}
+        dense
+        let:item
+        on:select={(e) => {
+            let key = e.detail.path;
+            let ft = tree.flatten($tree);
+            if (key in ft) $selectedNode = key;
+        }}
+    >
         <span class="tree-entry">
             {#if !item.items}
                 <Document height="1rem" />

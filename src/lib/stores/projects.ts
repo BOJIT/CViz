@@ -78,6 +78,10 @@ async function init(): Promise<Writable<ProjectStore>> {
     configTree.subscribe(async (c) => {
         let p = get(activeProject);
         if (p === null) return;
+
+        // Config changes should trigger a re-resolve
+        tree.update((t) => t);
+
         // Note this will result in one redundant write-back on project changes
         await writeConfigFile(p, c);
     });
