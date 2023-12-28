@@ -98,22 +98,28 @@ pub mod utils {
                 };
             }
             EventKind::Remove(_) => {
-                return ipc::FileChangeset::Removed(String::from(event.paths[0].to_str().unwrap()));
+                return ipc::FileChangeset::Removed(ipc::FileMetdadata {
+                    key: String::from(event.paths[0].to_str().unwrap()),
+                    includes: Vec::new(),
+                });
             }
             EventKind::Modify(f) => match f {
                 // Attempt rename by returning key change
                 ModifyKind::Name(_) => {
                     if event.paths.len() != 2 {
                         // Rename of length 1 corresponds to a remove
-                        return ipc::FileChangeset::Removed(String::from(
-                            event.paths[0].to_str().unwrap(),
-                        ));
+                        return ipc::FileChangeset::Removed(ipc::FileMetdadata {
+                            key: String::from(event.paths[0].to_str().unwrap()),
+                            includes: Vec::new(),
+                        });
                     }
 
-                    return ipc::FileChangeset::Renamed((
-                        String::from(event.paths[0].to_str().unwrap()),
-                        String::from(event.paths[1].to_str().unwrap()),
-                    ));
+                    return ipc::FileChangeset::NoEvent;
+
+                    // return ipc::FileChangeset::Renamed((
+                    //     String::from(event.paths[0].to_str().unwrap()),
+                    //     String::from(event.paths[1].to_str().unwrap()),
+                    // ));
                 }
 
                 // File has been re-modified. Re-tokenize

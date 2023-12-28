@@ -30,7 +30,7 @@ pub struct FileMetdadata {
 #[serde(tag = "type")]
 pub enum FileChangeset {
     NoEvent,
-    Removed(String),
+    Removed(FileMetdadata),
     Renamed((String, String)),
     Added(FileMetdadata),
     Modified(FileMetdadata),

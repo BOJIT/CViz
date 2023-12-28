@@ -95,12 +95,13 @@ function applyChangesets(changesets: FileChangeset[]) {
 
         changesets.forEach((cs) => {
             if (cs.type === "no_event") return;
-            if (!cs.key.startsWith(prefix)) return s;
 
             switch (cs.type) {
                 case "added":
                 case "modified":
                     {
+                        if (!cs.key.startsWith(prefix)) return s;
+
                         // Populate nested tree
                         let treeComponents = cs.key.slice(prefix.length).split('/').filter((c) => (c.length > 0));
 
@@ -118,6 +119,25 @@ function applyChangesets(changesets: FileChangeset[]) {
                         n.data = {
                             dependencies: cs.includes ? cs.includes : [],
                         };
+
+                        break;
+                    }
+
+                case "removed":
+                    {
+                        let treeComponents = cs.key.slice(prefix.length).split('/').filter((c) => (c.length > 0));
+
+                        let n = s;  // Root node REF
+                        for (let i = 0; i < treeComponents.length - 1; i++) {
+                            if (n.items === undefined) return;   // Node doesn't exist
+
+                            n = n.items[treeComponents[i]];  // by REF
+                            if (n === undefined) return; // Node doesn't exist
+                        }
+
+                        // Get last node and delete if present
+                        if (n.items === undefined) return;
+                        delete n.items[treeComponents[treeComponents.length - 1]];
 
                         break;
                     }
