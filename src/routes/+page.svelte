@@ -65,9 +65,6 @@
 
     /*-------------------------------- Methods -------------------------------*/
 
-    // TEMP
-    // import graph from "$lib/components/data";
-
     let nodes: Node[] = [];
     let links: Link[] = [];
 
@@ -77,6 +74,19 @@
     tree.subscribe((t) => {
         let f = tree.flatten(t);
         let newLinks: Link[] = [];
+
+        let ignores = $config.ignoreList;
+        Object.keys(f).forEach((k) => {
+            // Prune out all ignored nodes
+            ignores?.forEach((i) => {
+                // Currently this only uses paths relative to the root
+                // TODO add regex support?
+                if (k in f && k.startsWith(i)) {
+                    delete f[k];
+                    return;
+                }
+            });
+        });
 
         // Add new/updated nodes to graph
         Object.entries(f).forEach((n) => {
