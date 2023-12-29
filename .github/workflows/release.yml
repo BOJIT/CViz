@@ -11,9 +11,6 @@ jobs:
   publish-tauri:
     permissions:
       contents: write
-    with:
-      ref: ${{ github.event.pull_request.merge_commit_sha }}
-      fetch-depth: '0'
     strategy:
       fail-fast: false
       matrix:
@@ -22,6 +19,9 @@ jobs:
     runs-on: ${{ matrix.platform }}
     steps:
       - uses: actions/checkout@v4
+        with:
+            ref: ${{ github.event.pull_request.merge_commit_sha }}
+            fetch-depth: '0'
 
       - name: get proposed tag
         id: get_version
