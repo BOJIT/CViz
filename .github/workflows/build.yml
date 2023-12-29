@@ -34,3 +34,14 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAURI_PRIVATE_KEY: ${{ secrets.TAURI_PRIVATE_KEY }}
+
+  check-tag-unique:
+    runs-on: ubuntu-20.04
+    steps:
+    - uses: mukunku/tag-exists-action@v1.5.0
+      id: check-tag
+      with:
+        tag: '0.1.0'
+
+    - run: echo "Tag exists!"
+      if: ${{ steps.check-tag.outputs.exists == 'true' }}

@@ -74,7 +74,7 @@
                 "https://cviz.bojit.org/{{target}}/{{arch}}/{{current_version}}"
             ],
             "dialog": true,
-            "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDY2MUUzMDgwOTJBRjI2RgpSV1J2OGlvSkNPTmhCamdneEpmdjBSK2x1dTNoRmY0dGhHdk1jYVZvMktRQTcraXp0Vjd3djBxeQo"
+            "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEM0NDQ5MTQ5NzQyNDUyMjAKUldRZ1VpUjBTWkZFeE0xRGlBMnpNRGl2SkJTbjVIS3BwaUNRS1dLbnAvQ3hwNit5ZGVGaXNKQ1YK"
         },
         "windows": [
             {
