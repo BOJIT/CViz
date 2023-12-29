@@ -1,11 +1,6 @@
 name: "build"
 
-on:
-  pull_request:
-    types:
-      - opened
-    branches:
-      - 'development'
+on: [pull_request]
 
 jobs:
   build-tauri:
