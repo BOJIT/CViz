@@ -1,7 +1,9 @@
 name: "publish"
 
 on:
-  push:
+  pull_request:
+    types:
+      - closed
     branches:
       - main
 
@@ -9,6 +11,9 @@ jobs:
   publish-tauri:
     permissions:
       contents: write
+    with:
+      ref: ${{ github.event.pull_request.merge_commit_sha }}
+      fetch-depth: '0'
     strategy:
       fail-fast: false
       matrix:
@@ -38,9 +43,17 @@ jobs:
       - uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAURI_PRIVATE_KEY: ${{ secrets.TAURI_PRIVATE_KEY }}
         with:
           tagName: cviz-v__VERSION__ # the action automatically replaces \_\_VERSION\_\_ with the app version
           releaseName: "CViz v__VERSION__"
           releaseBody: "See the assets to download this version and install"
           releaseDraft: true
           prerelease: false
+
+    # - name: Bump version and push tag
+    #   uses: anothrNick/github-tag-action@1.64.0 # Don't use @master or @v1 unless you're happy to test the latest version
+    #   env:
+    #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # if you don't want to set write permissions use a PAT token
+    #     WITH_V: false
+    #     PRERELEASE: true
