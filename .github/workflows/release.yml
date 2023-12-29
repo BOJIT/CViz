@@ -37,9 +37,7 @@ jobs:
 
       # Only fail the duplicate tag on one platform
       - run: echo "Tag exists!" && exit 1
-        if: |
-          matrix.platform == 'ubuntu-20.04' ||
-          ${{ steps.check-tag.outputs.exists == 'true' }}
+        if: ${{ matrix.platform == 'ubuntu-20.04' && steps.check-tag.outputs.exists == 'true' }}
 
       - name: setup node
         uses: actions/setup-node@v4
