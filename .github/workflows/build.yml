@@ -40,7 +40,7 @@ jobs:
     steps:
     - name: get proposed tag
       id: get_version
-      uses: notiz-dev/github-action-json-property@0.2.0
+      uses: notiz-dev/github-action-json-property@v0.2.0
       with:
           path: 'src-tauri/tauri.conf.json'
           prop_path: 'package.version'
