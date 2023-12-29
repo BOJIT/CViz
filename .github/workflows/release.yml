@@ -64,8 +64,6 @@ jobs:
           tagName: cviz-v__VERSION__ # the action automatically replaces \_\_VERSION\_\_ with the app version
           releaseName: "CViz v__VERSION__"
           releaseBody: "See the assets to download this version and install"
-          releaseDraft: true
-          prerelease: false
 
       # Only push the tag once
       - name: Push proposed tag to main commit
