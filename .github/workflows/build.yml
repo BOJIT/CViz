@@ -38,17 +38,19 @@ jobs:
   check-tag-unique:
     runs-on: ubuntu-20.04
     steps:
-    - name: get proposed tag
-      id: get_version
-      uses: notiz-dev/github-action-json-property@v0.2.0
-      with:
-          path: 'src-tauri/tauri.conf.json'
-          prop_path: 'package.version'
+      - uses: actions/checkout@v4
 
-    - uses: mukunku/tag-exists-action@v1.5.0
-      id: check-tag
-      with:
-        tag: ${{steps.get_version.outputs.prop}}
+      - name: get proposed tag
+        id: get_version
+        uses: notiz-dev/github-action-json-property@v0.2.0
+        with:
+            path: 'src-tauri/tauri.conf.json'
+            prop_path: 'package.version'
 
-    - run: echo "Tag exists!" && exit 1
-      if: ${{ steps.check-tag.outputs.exists == 'true' }}
+      - uses: mukunku/tag-exists-action@v1.5.0
+        id: check-tag
+        with:
+          tag: ${{steps.get_version.outputs.prop}}
+
+      - run: echo "Tag exists!" && exit 1
+        if: ${{ steps.check-tag.outputs.exists == 'true' }}
