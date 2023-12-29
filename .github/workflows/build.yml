@@ -1,0 +1,56 @@
+name: "build"
+
+on: [pull_request]
+
+jobs:
+  build-tauri:
+    strategy:
+      fail-fast: false
+      matrix:
+        platform: [macos-latest, ubuntu-20.04, windows-latest]
+
+    runs-on: ${{ matrix.platform }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: setup node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: install Rust stable
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: install dependencies (ubuntu only)
+        if: matrix.platform == 'ubuntu-20.04'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.0-dev libappindicator3-dev librsvg2-dev patchelf
+
+      - name: install frontend dependencies
+        run: yarn install # change this to npm or pnpm depending on which one you use
+
+      - uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAURI_PRIVATE_KEY: ${{ secrets.TAURI_PRIVATE_KEY }}
+
+  check-tag-unique:
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: get proposed tag
+        id: get_version
+        uses: notiz-dev/github-action-json-property@v0.2.0
+        with:
+            path: 'src-tauri/tauri.conf.json'
+            prop_path: 'package.version'
+
+      - uses: mukunku/tag-exists-action@v1.5.0
+        id: check-tag
+        with:
+          tag: ${{steps.get_version.outputs.prop}}
+
+      - run: echo "Tag exists!" && exit 1
+        if: ${{ steps.check-tag.outputs.exists == 'true' }}

@@ -30,12 +30,22 @@
             },
             "externalBin": [],
             "icon": [
-                "icons/icon_x48.png",
-                "icons/icon_x72.png",
-                "icons/icon_x96.png",
-                "icons/icon_x128.png",
-                "icons/icon_x192.png",
-                "icons/icon_x512.png"
+                "icons/128x128@2x.png",
+                "icons/128x128.png",
+                "icons/32x32.png",
+                "icons/icon.icns",
+                "icons/icon.ico",
+                "icons/icon.png",
+                "icons/Square107x107Logo.png",
+                "icons/Square142x142Logo.png",
+                "icons/Square150x150Logo.png",
+                "icons/Square284x284Logo.png",
+                "icons/Square30x30Logo.png",
+                "icons/Square310x310Logo.png",
+                "icons/Square44x44Logo.png",
+                "icons/Square71x71Logo.png",
+                "icons/Square89x89Logo.png",
+                "icons/StoreLogo.png"
             ],
             "identifier": "org.bojit.cviz",
             "longDescription": "",
@@ -59,7 +69,12 @@
             "csp": null
         },
         "updater": {
-            "active": false
+            "active": true,
+            "endpoints": [
+                "https://cviz.bojit.org/{{target}}/{{arch}}/{{current_version}}"
+            ],
+            "dialog": true,
+            "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEM0NDQ5MTQ5NzQyNDUyMjAKUldRZ1VpUjBTWkZFeE0xRGlBMnpNRGl2SkJTbjVIS3BwaUNRS1dLbnAvQ3hwNit5ZGVGaXNKQ1YK"
         },
         "windows": [
             {

@@ -1,3 +1,5 @@
 # CViz
 
-A web-based C/C++ visualisation/analysis suite
+![example workflow](https://github.com/BOJIT/CViz/actions/workflows/build.yml/badge.svg)
+
+A tauri-based C/C++ visualisation/analysis suite
