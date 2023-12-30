@@ -11,6 +11,8 @@
 <script lang="ts">
     /*-------------------------------- Imports -------------------------------*/
 
+    import theme from "@bojit/svelte-components/theme";
+
     import {
         RadioButtonOff,
         RadioButtonOn,
@@ -18,16 +20,28 @@
         CheckmarkCircle,
     } from "@svicons/ionicons-outline";
 
-    // import ColorPicker from "svelte-awesome-color-picker";
+    import { clickOutside } from "$lib/utils/clickoutside";
 
     /*--------------------------------- Props --------------------------------*/
 
     export let ignore: boolean = true;
     export let blacklist: boolean = true;
 
-    // export let colour: string = "#0000FF";
+    let showPalette = false;
+
+    // TODO make theme-reactive
+    let colourPalette = [...Array(8).keys()].map((i) => {
+        let arr = theme.swatchColorJS(i);
+        return `#${arr[0][0].toString(16).padStart(2, "0")}${arr[0][1]
+            .toString(16)
+            .padStart(2, "0")}${arr[0][2].toString(16).padStart(2, "0")}`;
+    });
+
+    let colour = colourPalette[0];
 
     /*-------------------------------- Methods -------------------------------*/
+
+    console.log(colourPalette);
 
     /*------------------------------- Lifecycle ------------------------------*/
 </script>
@@ -59,15 +73,43 @@
         {/if}
     </button>
 
-    <!-- <div class="colpick">
-        <ColorPicker bind:hex={colour} isAlpha={false} label="" />
-    </div> -->
+    <button
+        class="toggle rel"
+        on:click|stopPropagation={() => {
+            showPalette = !showPalette;
+        }}
+    >
+        <div class="col-circle" style:background-color={colour} />
+        {#if showPalette}
+            <div
+                class="palette"
+                use:clickOutside
+                on:click_outside={() => {
+                    setTimeout(() => {
+                        showPalette = false;
+                    }, 100);
+                }}
+            >
+                {#each colourPalette as c}
+                    <button
+                        class="col-circle"
+                        style:background-color={c}
+                        on:click={() => {
+                            colour = c;
+                        }}
+                    />
+                {/each}
+            </div>
+        {/if}
+    </button>
 </div>
 
 <style>
     .btn-group {
         display: flex;
         gap: 0.2rem;
+        align-items: center;
+        justify-content: center;
     }
 
     .toggle {
@@ -79,17 +121,32 @@
         background-color: gray;
     }
 
-    /* .colpick {
-        z-index: 30;
+    .palette {
+        position: absolute;
+        top: 1rem;
+        left: 1rem;
+        width: 5.4rem;
+
+        border-radius: 0.7rem;
+        background-color: var(--color-gray-700);
+        padding: 0.5rem;
+
+        display: flex; /* establish flex container */
+        flex-wrap: wrap; /* enable flex items to wrap */
+        gap: 0.4rem;
     }
 
-    .colpick :global(.picker) {
-        z-index: 30;
+    .rel {
+        position: relative;
+        height: 1rem;
+        width: 1rem;
+        display: grid;
+        place-content: center;
     }
 
-    .colpick :global(.color),
-    :global(.alpha) {
-        width: 1rem !important;
-        height: 1rem !important;
-    } */
+    .col-circle {
+        height: 0.8rem;
+        width: 0.8rem;
+        border-radius: 50%;
+    }
 </style>
