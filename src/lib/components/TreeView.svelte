@@ -42,6 +42,7 @@
 <List {items} {...$$props}>
     <span slot="item" let:item>
         <ListItem
+            useRipple={false}
             {item}
             {...$$props}
             {...item}
@@ -74,3 +75,9 @@
         {/if}
     </span>
 </List>
+
+<style>
+    .flex :global(li) {
+        overflow: visible !important;
+    }
+</style>

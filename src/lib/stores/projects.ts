@@ -101,7 +101,6 @@ function add(root: string): boolean {
         if (s[root] !== undefined)
             keyExists = true;
 
-        // TODO deal with Windows paths
         let shortName = root.substring(root.lastIndexOf('/') + 1);
 
 

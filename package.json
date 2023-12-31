@@ -29,7 +29,7 @@
     },
     "type": "module",
     "dependencies": {
-        "@bojit/svelte-components": "^1.8.0",
+        "@bojit/svelte-components": "^1.8.1",
         "@fontsource/gloria-hallelujah": "^4.5.9",
         "@fontsource/jetbrains-mono": "^4.5.12",
         "@fontsource/nunito": "^4.5.12",
@@ -42,7 +42,6 @@
         "d3-zoom": "^3.0.0",
         "force-graph": "^1.43.4",
         "localforage": "^1.10.0",
-        "svelte-awesome-color-picker": "^2.4.8",
         "svelte-splitpanes": "^0.8.0"
     }
 }

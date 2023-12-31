@@ -4,11 +4,13 @@
 /* ----------------------------- Std/Cargo modules -------------------------- */
 
 use std::io::Write;
+use std::path::PathBuf;
 use std::sync::Mutex;
 
 use ipc::FileChangeset;
 use native_dialog::FileDialog;
 use notify::{RecursiveMode, Watcher};
+use path_slash::PathBufExt as _;
 use tauri::Manager;
 use tokio::sync::mpsc;
 use tokio::task::JoinSet;
@@ -82,7 +84,10 @@ async fn initialise_tree_watcher(
     // Forward all initial parse requests to another thread
     let mut set = JoinSet::new();
     for f in files.iter() {
-        set.spawn(parse_file::utils::parse_symbols(String::from(f)));
+        let unix_path = PathBuf::from_slash(f);
+        set.spawn(parse_file::utils::parse_symbols(String::from(
+            unix_path.to_str().unwrap(),
+        )));
     }
 
     // Pass all initial changesets in a single event
