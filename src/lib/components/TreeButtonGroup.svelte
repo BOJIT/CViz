@@ -22,9 +22,11 @@
 
     import { clickOutside } from "$lib/utils/clickoutside";
 
+    import { createEventDispatcher } from "svelte";
+
     /*--------------------------------- Props --------------------------------*/
 
-    export let ignore: boolean = true;
+    export let include: boolean = true;
     export let blacklist: boolean = true;
 
     let showPalette = false;
@@ -37,11 +39,11 @@
             .padStart(2, "0")}${arr[0][2].toString(16).padStart(2, "0")}`;
     });
 
-    let colour = colourPalette[0];
+    export let colour = colourPalette[0];
+
+    const dispatch = createEventDispatcher();
 
     /*-------------------------------- Methods -------------------------------*/
-
-    console.log(colourPalette);
 
     /*------------------------------- Lifecycle ------------------------------*/
 </script>
@@ -50,10 +52,11 @@
     <button
         class="toggle"
         on:click|stopPropagation={() => {
-            ignore = !ignore;
+            include = !include;
+            dispatch("include", include);
         }}
     >
-        {#if ignore}
+        {#if include}
             <RadioButtonOn height="1rem" />
         {:else}
             <RadioButtonOff height="1rem" />
@@ -131,9 +134,11 @@
         background-color: var(--color-gray-700);
         padding: 0.5rem;
 
-        display: flex; /* establish flex container */
-        flex-wrap: wrap; /* enable flex items to wrap */
+        display: flex;
+        flex-wrap: wrap;
         gap: 0.4rem;
+
+        z-index: 30;
     }
 
     .rel {

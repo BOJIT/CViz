@@ -17,6 +17,7 @@
     import tree, { selectedNode, type NestedTree } from "$lib/stores/tree";
 
     import { Document } from "@svicons/ionicons-outline";
+    import config from "$lib/stores/config";
 
     /*--------------------------------- Types --------------------------------*/
 
@@ -49,15 +50,13 @@
                     return 0;
                 })
                 .forEach((n) => {
+                    let path =
+                        currentPath === "" ? n[0] : `${currentPath}/${n[0]}`;
                     const entry: TreeViewEntry = {
                         text: n[0],
-                        path: `${currentPath}/${n[0]}`,
+                        path: path,
                     };
-                    const items = pushTreeEntry(
-                        [],
-                        n[1],
-                        currentPath === "" ? n[0] : `${currentPath}/${n[0]}`,
-                    );
+                    const items = pushTreeEntry([], n[1], path);
                     if (items.length > 0) entry.items = items;
 
                     tv.push(entry);
@@ -87,7 +86,24 @@
             {/if}
             {item.text}
             {#if item.items}
-                <TreeButtonGroup />
+                <TreeButtonGroup
+                    include={$config.includeRoots?.includes(item.path)}
+                    on:include={(e) => {
+                        config.update((c) => {
+                            if (e.detail === true) {
+                                c.includeRoots?.push(item.path);
+                            } else {
+                                if (c.includeRoots) {
+                                    c.includeRoots = c.includeRoots.filter(
+                                        (i) => i !== item.path,
+                                    );
+                                }
+                            }
+
+                            return c;
+                        });
+                    }}
+                />
             {/if}
         </span>
     </TreeView>
