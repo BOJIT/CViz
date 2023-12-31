@@ -3,7 +3,9 @@ pub mod utils {
     use regex::Regex;
     use std::fs::File;
     use std::io::{BufRead, BufReader};
-    use std::path::Path;
+    use std::path::{Path, PathBuf};
+
+    use path_slash::PathBufExt as _;
 
     use crate::ipc;
 
@@ -90,7 +92,8 @@ pub mod utils {
         // Match on event type return if unsupported
         match event.kind {
             EventKind::Create(_) => {
-                let meta = parse_symbols(String::from(event.paths[0].to_str().unwrap())).await;
+                let unix_path = PathBuf::from_slash(event.paths[0].to_str().unwrap());
+                let meta = parse_symbols(String::from(unix_path.to_str().unwrap())).await;
 
                 return match meta {
                     Some(m) => ipc::FileChangeset::Modified(m),
@@ -124,7 +127,8 @@ pub mod utils {
 
                 // File has been re-modified. Re-tokenize
                 ModifyKind::Data(_) => {
-                    let meta = parse_symbols(String::from(event.paths[0].to_str().unwrap())).await;
+                    let unix_path = PathBuf::from_slash(event.paths[0].to_str().unwrap());
+                    let meta = parse_symbols(String::from(unix_path.to_str().unwrap())).await;
 
                     return match meta {
                         Some(m) => ipc::FileChangeset::Modified(m),

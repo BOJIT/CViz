@@ -26,8 +26,8 @@
 
     /*--------------------------------- Props --------------------------------*/
 
-    export let include: boolean = true;
-    export let blacklist: boolean = true;
+    export let include: boolean = false;
+    export let blacklist: boolean = false;
 
     let showPalette = false;
 
