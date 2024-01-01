@@ -4,13 +4,11 @@
 /* ----------------------------- Std/Cargo modules -------------------------- */
 
 use std::io::Write;
-use std::path::PathBuf;
 use std::sync::Mutex;
 
 use ipc::FileChangeset;
 use native_dialog::FileDialog;
 use notify::{RecursiveMode, Watcher};
-use path_slash::PathBufExt as _;
 use tauri::Manager;
 use tokio::sync::mpsc;
 use tokio::task::JoinSet;
@@ -55,14 +53,11 @@ fn pick_directory() -> String {
         .unwrap();
 
     let path = match path {
-        Some(path) => path,
+        Some(path) => parse_file::utils::to_unix(&path),
         None => return String::from(""),
     };
 
-    let path = match path.to_str() {
-        Some(path) => String::from(path),
-        None => return String::from(""),
-    };
+    println!("PATH: {:?}", path);
 
     path
 }
@@ -73,6 +68,10 @@ async fn initialise_tree_watcher(
     state: tauri::State<'_, AppState>,
     root: &str,
 ) -> Result<(), ()> {
+    // Convert to local file extension
+    let path = parse_file::utils::from_unix(root);
+    let root = path.to_str().unwrap();
+
     // TODO handle glob ignore patterns
 
     // Fetch changesets initially for all C/C++ files
@@ -84,10 +83,7 @@ async fn initialise_tree_watcher(
     // Forward all initial parse requests to another thread
     let mut set = JoinSet::new();
     for f in files.iter() {
-        let unix_path = PathBuf::from_slash(f);
-        set.spawn(parse_file::utils::parse_symbols(String::from(
-            unix_path.to_str().unwrap(),
-        )));
+        set.spawn(parse_file::utils::parse_symbols_copy(String::from(f)));
     }
 
     // Pass all initial changesets in a single event
@@ -154,7 +150,8 @@ async fn initialise_tree_watcher(
 #[tauri::command]
 fn read_config_file(app_handle: tauri::AppHandle, root: &str) -> ipc::ConfigTree {
     let path_str = format!("{root}/.cviz.yaml");
-    let path = std::path::Path::new(&path_str);
+    let path = parse_file::utils::from_unix(&path_str);
+    let path = std::path::Path::new(&path);
 
     let f = std::fs::File::open(path);
     let f = match f {
@@ -163,6 +160,8 @@ fn read_config_file(app_handle: tauri::AppHandle, root: &str) -> ipc::ConfigTree
             // Create blank config file if doesn't exist
             let h = std::fs::File::create(path).unwrap();
             create_default_config(&h).unwrap();
+
+            // TODO re-open the file in read-write mode
 
             // Notify creation of config file
             show_webview_dialog(
@@ -203,7 +202,7 @@ fn read_config_file(app_handle: tauri::AppHandle, root: &str) -> ipc::ConfigTree
 #[tauri::command]
 fn write_config_file(app_handle: tauri::AppHandle, root: &str, config: ipc::ConfigTree) {
     let path_str = format!("{root}/.cviz.yaml");
-    let path = std::path::Path::new(&path_str);
+    let path = parse_file::utils::from_unix(&path_str);
 
     let f = std::fs::File::create(path);
     let mut f = match f {
