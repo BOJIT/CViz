@@ -6,11 +6,22 @@ pub mod utils {
     use std::path::{Path, PathBuf};
 
     use path_slash::PathBufExt as _;
+    use path_slash::PathExt as _;
 
     use crate::ipc;
 
     pub const EXTENSIONS: &'static [&'static str] =
         &["c", "cpp", "cxx", "cc", "c++", "h", "hpp", "hh", "h++"];
+
+    pub fn to_unix(path: &PathBuf) -> String {
+        let unix_path = Path::new(path.to_str().unwrap()).to_slash().unwrap();
+        return String::from(unix_path);
+    }
+
+    pub fn from_unix(path: &str) -> PathBuf {
+        let path = PathBuf::from_slash(path);
+        return path;
+    }
 
     pub fn match_files(root: &str, extensions: &Vec<&str>) -> Vec<String> {
         let mut paths: Vec<String> = Vec::new();
@@ -31,9 +42,15 @@ pub mod utils {
         paths
     }
 
-    pub async fn parse_symbols(path: String) -> Option<ipc::FileMetdadata> {
+    pub async fn parse_symbols_copy(path: String) -> Option<ipc::FileMetdadata> {
+        return parse_symbols(&path).await;
+    }
+
+    pub async fn parse_symbols(path: &str) -> Option<ipc::FileMetdadata> {
+        let unix_path = to_unix(&PathBuf::from(path)); // TODO validate
+
         let mut metadata = ipc::FileMetdadata {
-            key: String::from(&path),
+            key: unix_path,
             includes: Vec::new(),
         };
 
@@ -41,7 +58,7 @@ pub mod utils {
         let rx = Regex::new(r###"#include\s+[" < "](.*)[">]"###).unwrap();
 
         // Search for line-by-line matches
-        let file = File::open(Path::new(&path));
+        let file = File::open(Path::new(path));
         match file {
             Ok(f) => {
                 let reader = BufReader::new(f);
@@ -87,13 +104,10 @@ pub mod utils {
             }
         }
 
-        // TODO convert windows to UNIX-style paths
-
         // Match on event type return if unsupported
         match event.kind {
             EventKind::Create(_) => {
-                let unix_path = PathBuf::from_slash(event.paths[0].to_str().unwrap());
-                let meta = parse_symbols(String::from(unix_path.to_str().unwrap())).await;
+                let meta = parse_symbols(event.paths[0].to_str().unwrap()).await;
 
                 return match meta {
                     Some(m) => ipc::FileChangeset::Modified(m),
@@ -111,8 +125,10 @@ pub mod utils {
                 ModifyKind::Name(_) => {
                     if event.paths.len() != 2 {
                         // Rename of length 1 corresponds to a remove
+                        let unix_path = to_unix(&(event.paths[0]));
+
                         return ipc::FileChangeset::Removed(ipc::FileMetdadata {
-                            key: String::from(event.paths[0].to_str().unwrap()),
+                            key: unix_path,
                             includes: Vec::new(),
                         });
                     }
@@ -127,8 +143,7 @@ pub mod utils {
 
                 // File has been re-modified. Re-tokenize
                 ModifyKind::Data(_) => {
-                    let unix_path = PathBuf::from_slash(event.paths[0].to_str().unwrap());
-                    let meta = parse_symbols(String::from(unix_path.to_str().unwrap())).await;
+                    let meta = parse_symbols(event.paths[0].to_str().unwrap()).await;
 
                     return match meta {
                         Some(m) => ipc::FileChangeset::Modified(m),

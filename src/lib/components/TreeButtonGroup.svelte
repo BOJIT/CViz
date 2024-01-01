@@ -27,7 +27,7 @@
     /*--------------------------------- Props --------------------------------*/
 
     export let include: boolean = false;
-    export let blacklist: boolean = false;
+    export let ignore: boolean = false;
 
     let showPalette = false;
 
@@ -66,10 +66,11 @@
     <button
         class="toggle"
         on:click|stopPropagation={() => {
-            blacklist = !blacklist;
+            ignore = !ignore;
+            dispatch("ignore", ignore);
         }}
     >
-        {#if blacklist}
+        {#if ignore}
             <RemoveCircle height="1rem" />
         {:else}
             <CheckmarkCircle height="1rem" />

@@ -88,6 +88,7 @@
             {#if item.items}
                 <TreeButtonGroup
                     include={$config.includeRoots?.includes(item.path)}
+                    ignore={$config.ignoreList?.includes(item.path)}
                     on:include={(e) => {
                         config.update((c) => {
                             if (e.detail === true) {
@@ -95,6 +96,21 @@
                             } else {
                                 if (c.includeRoots) {
                                     c.includeRoots = c.includeRoots.filter(
+                                        (i) => i !== item.path,
+                                    );
+                                }
+                            }
+
+                            return c;
+                        });
+                    }}
+                    on:ignore={(e) => {
+                        config.update((c) => {
+                            if (e.detail === true) {
+                                c.ignoreList?.push(item.path);
+                            } else {
+                                if (c.ignoreList) {
+                                    c.ignoreList = c.ignoreList.filter(
                                         (i) => i !== item.path,
                                     );
                                 }
