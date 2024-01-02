@@ -32,12 +32,14 @@
     let showPalette = false;
 
     // TODO make theme-reactive
-    let colourPalette = [...Array(8).keys()].map((i) => {
-        let arr = theme.swatchColorJS(i);
-        return `#${arr[0][0].toString(16).padStart(2, "0")}${arr[0][1]
-            .toString(16)
-            .padStart(2, "0")}${arr[0][2].toString(16).padStart(2, "0")}`;
-    });
+    let colourPalette = ["none"].concat(
+        [...Array(7).keys()].map((i) => {
+            let arr = theme.swatchColorJS(i);
+            return `#${arr[0][0].toString(16).padStart(2, "0")}${arr[0][1]
+                .toString(16)
+                .padStart(2, "0")}${arr[0][2].toString(16).padStart(2, "0")}`;
+        }),
+    );
 
     export let colour = colourPalette[0];
 
@@ -83,7 +85,11 @@
             showPalette = !showPalette;
         }}
     >
-        <div class="col-circle" style:background-color={colour} />
+        <div
+            class="col-circle"
+            class:checker={colour === "none"}
+            style:background-color={colour !== "none" ? colour : null}
+        />
         {#if showPalette}
             <div
                 class="palette"
@@ -97,7 +103,8 @@
                 {#each colourPalette as c}
                     <button
                         class="col-circle"
-                        style:background-color={c}
+                        class:checker={c === "none"}
+                        style:background-color={c !== "none" ? c : null}
                         on:click={() => {
                             colour = c;
                         }}
@@ -154,5 +161,18 @@
         height: 0.8rem;
         width: 0.8rem;
         border-radius: 50%;
+    }
+
+    .checker {
+        background-image: linear-gradient(45deg, #ccc 25%, transparent 25%),
+            linear-gradient(135deg, #ccc 25%, transparent 25%),
+            linear-gradient(45deg, transparent 75%, #ccc 75%),
+            linear-gradient(135deg, transparent 75%, #ccc 75%);
+        background-size: 6px 6px; /* Must be a square */
+        background-position:
+            0 0,
+            3px 0,
+            3px -3px,
+            0px 3px; /* Must be half of one side of the square */
     }
 </style>

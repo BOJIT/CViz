@@ -1,42 +1,68 @@
-<script>
+<!--
+ * @file TreeView.svelte
+ * @author James Bennion-Pedley
+ * @brief Genericised Tree-view component
+ * @date 02/01/2024
+ *
+ * @copyright Copyright (c) 2024
+ *
+-->
+
+<script lang="ts" context="module">
+    /*--------------------------------- Types --------------------------------*/
+
+    export interface TreeViewItem {
+        text: string;
+        expanded?: boolean;
+        items?: TreeViewItem[];
+    }
+</script>
+
+<script lang="ts">
     // NOTE this file is modified from the Smelte library version
+
+    /*-------------------------------- Imports -------------------------------*/
 
     import { Icon, List, ListItem } from "@bojit/svelte-components/smelte";
 
     import { createEventDispatcher } from "svelte";
     import { slide } from "svelte/transition";
 
-    export let items = [];
+    /*--------------------------------- Props --------------------------------*/
+
+    export let items: TreeViewItem[] = [];
     export const value = "";
     export const text = "";
-    export const dense = false;
+    export const dense: boolean = false;
     export const navigation = false;
     export const select = false;
     export let level = 0;
     export let showExpandIcon = true;
     export let expandIcon = "arrow_right";
     export let selectable = true;
-    export let selected = null;
+    export let selected: TreeViewItem | null = null;
     export let selectedClasses = "bg-primary-trans";
-
-    const classesDefault = "rounded";
-
-    let expanded = [];
 
     const dispatch = createEventDispatcher();
 
-    function toggle(i) {
-        dispatch("select", i);
+    let refreshExpansion = false; // Horrendous hack
 
+    /*-------------------------------- Methods -------------------------------*/
+
+    function toggle(i: TreeViewItem) {
+        // For 'files'
         if (selectable && !i.items) {
             selected = i;
+        } else {
+            // For 'folders'
+            i.expanded = !i.expanded;
+            refreshExpansion = !refreshExpansion;
         }
 
-        expanded =
-            i && !expanded.includes(i)
-                ? [...expanded, i]
-                : expanded.filter((si) => si !== i);
+        dispatch("select", i);
     }
+
+    /*------------------------------- Lifecycle ------------------------------*/
 </script>
 
 <List {items} {...$$props}>
@@ -49,17 +75,20 @@
             selected={selectable && selected === item}
             {selectedClasses}
             on:click={() => toggle(item)}
-            on:click
         >
             <div class="flex items-center">
                 {#if showExpandIcon && !item.hideArrow && item.items}
-                    <Icon tip={expanded.includes(item)}>{expandIcon}</Icon>
+                    <Icon
+                        tip={item.expanded
+                            ? item.expanded
+                            : false && refreshExpansion}>{expandIcon}</Icon
+                    >
                 {/if}
-                <slot {item}><span>{item.text}</span></slot>
+                <slot {item} {refreshExpansion}><span>{item.text}</span></slot>
             </div>
         </ListItem>
 
-        {#if item.items && expanded.includes(item)}
+        {#if item.items && item.expanded}
             <div in:slide class="ml-6">
                 <svelte:self
                     {...$$props}
@@ -69,7 +98,7 @@
                     on:click
                     on:select
                 >
-                    <slot {item} />
+                    <slot {item} {refreshExpansion} />
                 </svelte:self>
             </div>
         {/if}
