@@ -11,7 +11,9 @@
 <script lang="ts">
     /*-------------------------------- Imports -------------------------------*/
 
-    import TreeView from "$lib/components/TreeView.svelte";
+    import TreeView, {
+        type TreeViewItem,
+    } from "$lib/components/TreeView.svelte";
     import TreeButtonGroup from "$lib/components/TreeButtonGroup.svelte";
 
     import tree, { selectedNode, type NestedTree } from "$lib/stores/tree";
@@ -21,21 +23,19 @@
 
     /*--------------------------------- Types --------------------------------*/
 
-    type TreeViewEntry = {
-        text: string;
+    interface TreeViewEntry extends TreeViewItem {
         path?: string;
         ref?: NestedTree;
-        items?: TreeViewEntry[];
-    };
+    }
 
     /*--------------------------------- Props --------------------------------*/
 
     /*-------------------------------- Methods -------------------------------*/
 
     function pushTreeEntry(
-        tv: TreeViewEntry[],
         t: NestedTree,
         currentPath: string = "",
+        tv: TreeViewEntry[] = [],
     ) {
         if (t.items) {
             Object.entries(t.items)
@@ -57,8 +57,9 @@
                         text: n[0],
                         path: path,
                         ref: n[1], // Pass reference to original treeview
+                        expanded: !!n[1].data?.ui?.expanded,
                     };
-                    const items = pushTreeEntry([], n[1], path);
+                    const items = pushTreeEntry(n[1], path);
                     if (items.length > 0) entry.items = items;
 
                     tv.push(entry);
@@ -68,24 +69,32 @@
         return tv;
     }
 
-    /*------------------------------- Lifecycle ------------------------------*/
+    function handleSelect(i: TreeViewEntry) {
+        // Write back UI data to NestedTree
+        if (i.ref) {
+            // Create intermediate objects if they don't exist
+            i.ref.data = i.ref.data || {};
+            i.ref.data.ui = i.ref.data.ui || {};
 
-    tree.subscribe((t) => {
-        console.log(t);
-    });
+            i.ref.data.ui.expanded = i.expanded; // This doesn't need to trigger a tree store assignment
+        }
+
+        let key = i.path;
+        let ft = tree.flatten($tree);
+
+        if (key && key in ft) $selectedNode = key;
+    }
+
+    /*------------------------------- Lifecycle ------------------------------*/
 </script>
 
 <div class="container">
     <TreeView
-        items={pushTreeEntry([], $tree)}
+        items={pushTreeEntry($tree)}
         dense
         let:item
         on:select={(e) => {
-            console.log(e.detail.expanded);
-
-            let key = e.detail.path;
-            let ft = tree.flatten($tree);
-            if (key in ft) $selectedNode = key;
+            handleSelect(e.detail);
         }}
     >
         <span class="tree-entry">

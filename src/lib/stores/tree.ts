@@ -24,8 +24,8 @@ type UIState = {
 };
 
 type NodeData = {
-    dependencies: string[],
-    uiState?: UIState,
+    dependencies?: string[],
+    ui?: UIState,
 };
 
 type FlattenedTree = {
