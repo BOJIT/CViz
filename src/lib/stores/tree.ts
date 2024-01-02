@@ -18,16 +18,23 @@ import { activeProject } from "$lib/stores/projects";
 
 /*--------------------------------- Types ------------------------------------*/
 
+type UIState = {
+    expanded?: boolean,
+    groupColour?: string,
+};
+
 type NodeData = {
-    dependencies: string[]
+    dependencies: string[],
+    uiState?: UIState,
 };
 
 type FlattenedTree = {
     [key: string]: NodeData,
-}
+};
 
 export type NestedTree = {
     data?: NodeData,
+    parent?: NestedTree,    // Points up by reference
     items?: {
         [key: string]: NestedTree,
     },
@@ -105,17 +112,22 @@ function applyChangesets(changesets: FileChangeset[]) {
                         // Populate nested tree
                         let treeComponents = cs.key.slice(prefix.length).split('/').filter((c) => (c.length > 0));
 
-
                         let n = s;  // Root node REF
+                        let p: NestedTree | undefined = undefined;
                         for (let i = 0; i < treeComponents.length; i++) {
                             if (n.items === undefined) n.items = {};
 
+                            // Create parent 'backlink' reference
+                            if (p) n.parent = p;
+
                             // Populate child if missing
                             if (n.items[treeComponents[i]] === undefined) n.items[treeComponents[i]] = {};
+                            p = n;  // by REF
                             n = n.items[treeComponents[i]];  // by REF
                         }
 
                         // Populate final node data
+                        n.parent = p;
                         n.data = {
                             dependencies: cs.includes ? cs.includes : [],
                         };

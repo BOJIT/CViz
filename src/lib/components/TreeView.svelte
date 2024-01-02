@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
     // NOTE this file is modified from the Smelte library version
 
     import { Icon, List, ListItem } from "@bojit/svelte-components/smelte";
@@ -9,7 +9,7 @@
     export let items = [];
     export const value = "";
     export const text = "";
-    export const dense = false;
+    export const dense: boolean = false;
     export const navigation = false;
     export const select = false;
     export let level = 0;
@@ -36,11 +36,15 @@
             i && !expanded.includes(i)
                 ? [...expanded, i]
                 : expanded.filter((si) => si !== i);
+
+        i.expanded = expanded.includes(i);
     }
 </script>
 
 <List {items} {...$$props}>
     <span slot="item" let:item>
+        {@const isExpanded = expanded.includes(item)}
+
         <ListItem
             useRipple={false}
             {item}
@@ -53,13 +57,13 @@
         >
             <div class="flex items-center">
                 {#if showExpandIcon && !item.hideArrow && item.items}
-                    <Icon tip={expanded.includes(item)}>{expandIcon}</Icon>
+                    <Icon tip={isExpanded}>{expandIcon}</Icon>
                 {/if}
                 <slot {item}><span>{item.text}</span></slot>
             </div>
         </ListItem>
 
-        {#if item.items && expanded.includes(item)}
+        {#if item.items && isExpanded}
             <div in:slide class="ml-6">
                 <svelte:self
                     {...$$props}

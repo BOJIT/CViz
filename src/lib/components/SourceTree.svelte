@@ -24,6 +24,7 @@
     type TreeViewEntry = {
         text: string;
         path?: string;
+        ref?: NestedTree;
         items?: TreeViewEntry[];
     };
 
@@ -55,6 +56,7 @@
                     const entry: TreeViewEntry = {
                         text: n[0],
                         path: path,
+                        ref: n[1], // Pass reference to original treeview
                     };
                     const items = pushTreeEntry([], n[1], path);
                     if (items.length > 0) entry.items = items;
@@ -67,6 +69,10 @@
     }
 
     /*------------------------------- Lifecycle ------------------------------*/
+
+    tree.subscribe((t) => {
+        console.log(t);
+    });
 </script>
 
 <div class="container">
@@ -75,6 +81,8 @@
         dense
         let:item
         on:select={(e) => {
+            console.log(e.detail.expanded);
+
             let key = e.detail.path;
             let ft = tree.flatten($tree);
             if (key in ft) $selectedNode = key;
