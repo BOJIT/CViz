@@ -100,7 +100,7 @@
             }
 
             // Resolve dependencies
-            n[1].dependencies.forEach((i) => {
+            n[1].dependencies?.forEach((i) => {
                 let target = tree.resolve(
                     i,
                     f,
