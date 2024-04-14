@@ -31,7 +31,6 @@
     </p>
 
     <p>See our <a href="/docs">documentation</a></p>
-    <p>See our <a href="/releases/latest">releases</a></p>
 </Content>
 
 <style>
