@@ -31,6 +31,7 @@
     </p>
 
     <p>See our <a href="/docs">documentation</a></p>
+    <p><a href="/releases/latest">Install</a></p>
 </Content>
 
 <style>
