@@ -16,13 +16,15 @@
     import "@fontsource/jetbrains-mono";
 
     import { App, Notification } from "@bojit/svelte-components/core";
-    import { palette, mode as themeMode } from "@bojit/svelte-components/theme";
+    import { mode as themeMode } from "@bojit/svelte-components/theme";
     import { ThemeSelector } from "@bojit/svelte-components/widgets";
 
     import { themeOverlay } from "$lib/stores/overlays";
     import settings from "$lib/stores/settings";
     import projects from "$lib/stores/projects";
     import events from "$lib/utils/events";
+
+    import palette from "$lib/palette";
 
     /*--------------------------------- Props --------------------------------*/
 
@@ -54,7 +56,7 @@
     });
 </script>
 
-<App theme={palette.midnight} load={loadCheck}>
+<App theme={palette} load={loadCheck}>
     <slot />
 </App>
 
