@@ -6,7 +6,7 @@
 
 const palette = {
     colours: {
-        primary: "#20418c",
+        primary: "#3a5a48",
         secondary: "#7986cb",
         success: "#76b878",
         alert: "#faa019",

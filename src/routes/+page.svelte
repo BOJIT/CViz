@@ -27,6 +27,7 @@
     import KeyBindings from "$lib/components/KeyBindings.svelte";
     import ProjectDialog from "$lib/components/dialogs/ProjectDialog.svelte";
     import SettingsDialog from "$lib/components/dialogs/SettingsDialog.svelte";
+    import StatusBar from "$lib/components/StatusBar.svelte";
 
     // Stores
     import {
@@ -156,15 +157,10 @@
     </div>
 {/if}
 
+<StatusBar />
+
 <ProjectDialog bind:visible={$projectOverlay} />
 <SettingsDialog bind:visible={$settingsOverlay} />
-
-{#if import.meta.env.VITE_SHOW_UNSTABLE === "true"}
-    <!-- Beta Banner -->
-    <div class="beta">
-        <h6>This is a beta release! Beware of breaking changes!</h6>
-    </div>
-{/if}
 
 <KeyBindings />
 
@@ -197,27 +193,5 @@
         right: 0px;
 
         background-color: rgba(12, 12, 12, 0.5);
-    }
-
-    /* Banner for development release */
-    .beta {
-        position: fixed;
-        text-align: center;
-        bottom: 0px;
-        width: 100%;
-        z-index: 1000;
-        padding: 0.2rem;
-        color: black;
-
-        background-color: rgba(204, 204, 127, 0.623);
-    }
-
-    .beta h6 {
-        font-size: 0.8rem;
-    }
-
-    :global(.mode-dark) .beta {
-        color: white;
-        background-color: rgba(94, 94, 27, 0.425);
     }
 </style>

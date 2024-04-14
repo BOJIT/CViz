@@ -150,7 +150,7 @@
 
         background-color: #1d1d1df1;
 
-        max-height: calc(94vh - 3.8rem);
+        max-height: calc(100vh - 3.8rem);
         overflow: scroll;
     }
 
