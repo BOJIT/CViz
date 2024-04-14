@@ -20,24 +20,20 @@
 
     import logo from "$lib/assets/img/Logo.png";
     import GraphOverlay from "$lib/components/GraphOverlay.svelte";
-    import GraphView, {
-        type Node,
-        type Link,
-    } from "$lib/components/GraphView.svelte";
+    import GraphView from "$lib/components/GraphView.svelte";
     import KeyBindings from "$lib/components/KeyBindings.svelte";
     import ProjectDialog from "$lib/components/dialogs/ProjectDialog.svelte";
     import SettingsDialog from "$lib/components/dialogs/SettingsDialog.svelte";
     import StatusBar from "$lib/components/StatusBar.svelte";
 
     // Stores
+    import graph from "$lib/stores/graph";
     import {
         loadingOverlay,
         projectOverlay,
         settingsOverlay,
     } from "$lib/stores/overlays";
     import { activeProject } from "$lib/stores/projects";
-    import tree from "$lib/stores/tree";
-    import config from "$lib/stores/config";
 
     /*--------------------------------- Props --------------------------------*/
 
@@ -66,64 +62,10 @@
 
     /*-------------------------------- Methods -------------------------------*/
 
-    let nodes: Node[] = [];
-    let links: Link[] = [];
-
     /*------------------------------- Lifecycle ------------------------------*/
 
-    // Map store to graph nodes and edges
-    tree.subscribe((t) => {
-        let f = tree.flatten(t);
-        let newLinks: Link[] = [];
-
-        let ignores = $config.ignoreList;
-        Object.keys(f).forEach((k) => {
-            // Prune out all ignored nodes
-            ignores?.forEach((i) => {
-                // Currently this only uses paths relative to the root
-                // TODO add regex support?
-                if (k in f && k.startsWith(i)) {
-                    delete f[k];
-                    return;
-                }
-            });
-        });
-
-        // Add new/updated nodes to graph
-        Object.entries(f).forEach((n) => {
-            let sourceNode: Node | undefined = undefined;
-            if (!nodes.some((s: Node) => s.id === n[0])) {
-                sourceNode = {
-                    id: n[0],
-                    group: n[0].endsWith(".h") ? 2 : 1,
-                };
-                nodes.push(sourceNode);
-            }
-
-            // Resolve dependencies
-            n[1].dependencies?.forEach((i) => {
-                let target = tree.resolve(
-                    i,
-                    f,
-                    n[0].slice(0, n[0].lastIndexOf("/")),
-                    $config.includeRoots,
-                );
-
-                if (target === null) return; // TODO mark stdlib
-
-                let link = { source: target, target: n[0], value: 5 };
-                newLinks.push(link);
-            });
-        });
-
-        // Prune any nodes no longer present
-        nodes = nodes.filter((n) => n.id in f);
-
-        // Update to latest link copy
-        links = newLinks;
-    });
-
     onMount(async () => {
+        // Show project picker if there isn't a pre-selected project
         if ($activeProject === null) $projectOverlay = true;
     });
 </script>
@@ -145,7 +87,7 @@
 
 {#if $activeProject !== null}
     <div class="graph-container">
-        <GraphView {nodes} {links} />
+        <GraphView data={$graph} />
         <div class="graph-overlay">
             <GraphOverlay />
         </div>

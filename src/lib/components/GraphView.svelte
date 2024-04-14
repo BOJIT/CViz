@@ -8,23 +8,6 @@
  *
 -->
 
-<script context="module" lang="ts">
-    /*--------------------------------- Types --------------------------------*/
-
-    interface Node extends SimulationNodeDatum {
-        id: string;
-        group: number;
-    }
-
-    interface Link extends SimulationLinkDatum<Node> {
-        source: string;
-        target: string;
-        value: number;
-    }
-
-    export { type Node, type Link };
-</script>
-
 <script lang="ts">
     /*-------------------------------- Imports -------------------------------*/
 
@@ -32,12 +15,9 @@
 
     import type { SimulationNodeDatum, SimulationLinkDatum } from "d3-force";
 
-    import ForceGraph, {
-        type ForceGraphInstance,
-        type GraphData,
-        type LinkObject,
-        type NodeObject,
-    } from "force-graph";
+    import ForceGraph, { type ForceGraphInstance } from "force-graph";
+
+    import type { Graph } from "$lib/stores/graph";
 
     import { activeProject } from "$lib/stores/projects";
     import { selectedNode } from "$lib/stores/tree";
@@ -46,10 +26,7 @@
 
     let container: HTMLDivElement;
 
-    export let nodes: NodeObject[] = [];
-    export let links: LinkObject[] = [];
-
-    let data: GraphData = {
+    export let data: Graph = {
         nodes: [],
         links: [],
     };
@@ -71,11 +48,8 @@
         setTimeout(recenter, 200);
     });
 
-    $: {
-        data.nodes = [...nodes];
-        data.links = [...links];
-        graph?.graphData(data);
-    }
+    // Recompute graph on data change
+    $: graph?.graphData(data);
 
     onMount(() => {
         graph = ForceGraph();
