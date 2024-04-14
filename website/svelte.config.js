@@ -1,4 +1,4 @@
-import adapter from '@sveltejs/adapter-static';
+import adapter from '@sveltejs/adapter-cloudflare';
 import { mdsvex } from "mdsvex";
 import { vitePreprocess } from '@sveltejs/vite-plugin-svelte';
 
@@ -12,9 +12,7 @@ const config = {
         vitePreprocess(),
     ],
     kit: {
-        adapter: adapter({
-            strict: false,
-        }),
+        adapter: adapter(),
     }
 };
 
