@@ -23,20 +23,9 @@
 
     import logo from "$lib/assets/img/Logo.png";
 
-    import { themeOverlay } from "$lib/stores/overlays";
-
     /*--------------------------------- Props --------------------------------*/
 
     let items: NavItem[] = [
-        {
-            type: "button",
-            color: "transparent",
-            icon: Eyedrop,
-            label: "Edit Theme",
-            callback: () => {
-                $themeOverlay = true;
-            },
-        },
         {
             type: "button",
             color: "transparent",
