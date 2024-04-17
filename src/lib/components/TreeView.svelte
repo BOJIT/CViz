@@ -1,65 +1,63 @@
 <!--
  * @file TreeView.svelte
  * @author James Bennion-Pedley
- * @brief Genericised Tree-view component
+ * @brief Tree-view rendering of Tree data site
  * @date 02/01/2024
  *
  * @copyright Copyright (c) 2024
  *
 -->
 
-<script lang="ts" context="module">
-    /*--------------------------------- Types --------------------------------*/
-
-    export interface TreeViewItem {
-        text: string;
-        expanded?: boolean;
-        items?: TreeViewItem[];
-    }
-</script>
-
 <script lang="ts">
-    // NOTE this file is modified from the Smelte library version
-
     /*-------------------------------- Imports -------------------------------*/
-
-    import { Icon, List, ListItem } from "@bojit/svelte-components/smelte";
 
     import { createEventDispatcher } from "svelte";
     import { slide } from "svelte/transition";
 
+    import { Icon, List, ListItem } from "@bojit/svelte-components/smelte";
+
+    import { Document } from "@svicons/ionicons-outline";
+
+    import type { Tree } from "$lib/stores/tree";
+
+    import TreeButtonGroup from "$lib/components/TreeButtonGroup.svelte";
+
     /*--------------------------------- Props --------------------------------*/
 
-    export let items: TreeViewItem[] = [];
-    export const value = "";
-    export const text = "";
-    export const dense: boolean = false;
-    export const navigation = false;
-    export const select = false;
+    export let items: [string, Tree][];
     export let level = 0;
-    export let showExpandIcon = true;
-    export let expandIcon = "arrow_right";
-    export let selectable = true;
-    export let selected: TreeViewItem | null = null;
-    export let selectedClasses = "bg-primary-trans";
 
+    export let selected: Tree | null = null;
+
+    const selectedClasses = "bg-primary-trans";
+    const expandIcon = "arrow_right";
     const dispatch = createEventDispatcher();
-
-    let refreshExpansion = false; // Horrendous hack
 
     /*-------------------------------- Methods -------------------------------*/
 
-    function toggle(i: TreeViewItem) {
+    function toggle(t: Tree) {
+        console.log(t);
         // For 'files'
-        if (selectable && !i.items) {
-            selected = i;
+        if (!t.items) {
+            selected = t;
         } else {
             // For 'folders'
-            i.expanded = !i.expanded;
-            refreshExpansion = !refreshExpansion;
+            if (t.ui) {
+                t.ui.expanded = !t.ui.expanded;
+                t = t;
+            }
         }
 
-        dispatch("select", i);
+        dispatch("select", t);
+    }
+
+    // These functions are purely here for typing hints
+    function getKey(entry: [string, Tree]): string {
+        return entry[0];
+    }
+
+    function getValue(entry: [string, Tree]): Tree {
+        return entry[1];
     }
 
     /*------------------------------- Lifecycle ------------------------------*/
@@ -67,38 +65,44 @@
 
 <List {items} {...$$props}>
     <span slot="item" let:item>
+        <!-- Regain typing -->
+        {@const k = getKey(item)}
+        {@const n = getValue(item)}
+
         <ListItem
             useRipple={false}
-            {item}
             {...$$props}
-            {...item}
-            selected={selectable && selected === item}
             {selectedClasses}
-            on:click={() => toggle(item)}
+            selected={selected === k}
+            on:click={() => toggle(n)}
         >
-            <div class="flex items-center">
-                {#if showExpandIcon && !item.hideArrow && item.items}
-                    <Icon
-                        tip={item.expanded
-                            ? item.expanded
-                            : false && refreshExpansion}>{expandIcon}</Icon
-                    >
+            <div class="flex items-center tree-entry">
+                {#if n.items}
+                    <Icon tip={n.ui?.expanded ? true : false}>
+                        {expandIcon}
+                    </Icon>
                 {/if}
-                <slot {item} {refreshExpansion}><span>{item.text}</span></slot>
+                {#if n.data}
+                    <Document height="1rem" />
+                {/if}
+                {k}
+                {#if n.items}
+                    <TreeButtonGroup />
+                {/if}
             </div>
         </ListItem>
 
-        {#if item.items && item.expanded}
+        {#if n.items && n.ui?.expanded}
             <div in:slide class="ml-6">
                 <svelte:self
+                    items={Object.entries(n.items)}
                     {...$$props}
-                    items={item.items}
                     level={level + 1}
                     let:item
                     on:click
                     on:select
                 >
-                    <slot {item} {refreshExpansion} />
+                    <slot {item} />
                 </svelte:self>
             </div>
         {/if}
@@ -108,5 +112,14 @@
 <style>
     .flex :global(li) {
         overflow: visible !important;
+    }
+
+    .tree-entry {
+        display: flex;
+        gap: 0.6rem;
+
+        align-items: center;
+        justify-content: center;
+        font-family: var(--font-monospace);
     }
 </style>

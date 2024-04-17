@@ -19,49 +19,65 @@ import { activeProject } from "$lib/stores/projects";
 /*--------------------------------- Types ------------------------------------*/
 
 type UIState = {
-    expanded?: boolean,
+    expanded: boolean,
     groupColour?: string,
 };
 
 type NodeData = {
-    dependencies?: string[],
-    ui?: UIState,
+    dependencies: string[],
 };
 
 type FlattenedTree = {
     [key: string]: NodeData,
 };
 
-export type NestedTree = {
-    data?: NodeData,
-    parent?: NestedTree,    // Points up by reference
-    items?: {
-        [key: string]: NestedTree,
-    },
+type TreeProps = {
+    parent: Tree | null, // Null means we are the top of the tree
+    ui: UIState,
 };
+
+// A tree entry is either a node (so has data) or a folder (which references nodes)
+export type Tree = TreeProps & ({
+    data: NodeData,
+    nodes?: never,
+} | {
+    nodes: {
+        [key: string]: Tree,
+    },
+    data?: never,
+});
 
 /*--------------------------------- State ------------------------------------*/
 
-const store: Writable<NestedTree> = writable({});
+const DEFAULT_STORE: Tree = {
+    parent: null,
+    // NOTE: we never see the top node's UI state
+    ui: {
+        expanded: true,
+    },
+    nodes: {}
+}
+
+const store: Writable<Tree> = writable(structuredClone(DEFAULT_STORE));
 
 const selectedNode: Writable<string | null> = writable(null);
 
 /*------------------------------- Functions ----------------------------------*/
 
-async function init(): Promise<Writable<NestedTree>> {
+async function init(): Promise<Writable<Tree>> {
     return store;
 }
 
 function reset(): void {
-    store.set({});
+    store.set(structuredClone(DEFAULT_STORE));
 }
 
-function flatten(t: NestedTree, parent?: string, res: FlattenedTree = {}): FlattenedTree {
-    if (!(t.items)) return res;
+function flatten(t: Tree, parent?: string, res: FlattenedTree = {}): FlattenedTree {
+    if (!(t.nodes)) return res;
 
-    Object.entries(t.items).forEach((n) => {
+    Object.entries(t.nodes).forEach((n) => {
         let name = parent ? parent + '/' + n[0] : n[0];
-        if (n[1].items) {
+        if (n[1].nodes) {
             flatten(n[1], name, res);
         } else {
             if (n[1].data)
@@ -112,23 +128,28 @@ function applyChangesets(changesets: FileChangeset[]) {
                         // Populate nested tree
                         let treeComponents = cs.key.slice(prefix.length).split('/').filter((c) => (c.length > 0));
 
-                        let n = s;  // Root node REF
-                        let p: NestedTree | undefined = undefined;
+                        let t: Tree = s;  // Root node REF
+                        let p: Tree | null = null;
+
+                        // Populate intermediate "folder" nodes
                         for (let i = 0; i < treeComponents.length; i++) {
-                            if (n.items === undefined) n.items = {};
+                            // If node is not a folder, exit (should never be called)
+                            if (t.data) return;
 
                             // Create parent 'backlink' reference
-                            if (p) n.parent = p;
+                            t.parent = p;
 
-                            // Populate child if missing
-                            if (n.items[treeComponents[i]] === undefined) n.items[treeComponents[i]] = {};
-                            p = n;  // by REF
-                            n = n.items[treeComponents[i]];  // by REF
+                            // Populate child if missing (initialise defaults)
+                            if (t.nodes[treeComponents[i]] === undefined)
+                                t.nodes[treeComponents[i]] = { parent: t, ui: { expanded: false }, nodes: {} };
+
+                            p = t;  // Make current node the parent by REF
+                            t = t.nodes[treeComponents[i]];  // move down into the tree by REF
                         }
 
-                        // Populate final node data
-                        n.parent = p;
-                        n.data = {
+                        // Populate final node data (ensure NOT a folder node)
+                        t.nodes = undefined;
+                        t.data = {
                             dependencies: cs.includes ? cs.includes : [],
                         };
 
@@ -141,15 +162,15 @@ function applyChangesets(changesets: FileChangeset[]) {
 
                         let n = s;  // Root node REF
                         for (let i = 0; i < treeComponents.length - 1; i++) {
-                            if (n.items === undefined) return;   // Node doesn't exist
+                            if (n.nodes === undefined) return;   // Node doesn't exist
 
-                            n = n.items[treeComponents[i]];  // by REF
+                            n = n.nodes[treeComponents[i]];  // by REF
                             if (n === undefined) return; // Node doesn't exist
                         }
 
                         // Get last node and delete if present
-                        if (n.items === undefined) return;
-                        delete n.items[treeComponents[treeComponents.length - 1]];
+                        if (n.nodes === undefined) return;
+                        delete n.nodes[treeComponents[treeComponents.length - 1]];
 
                         break;
                     }

@@ -13,7 +13,7 @@
 
     import { get } from "svelte/store";
 
-    import { selectedNode, type NestedTree } from "$lib/stores/tree";
+    import { selectedNode, type Tree } from "$lib/stores/tree";
 
     import tree from "$lib/stores/tree";
 
@@ -23,7 +23,7 @@
 
     /*-------------------------------- Methods -------------------------------*/
 
-    function getDependencies(t: NestedTree, key: string | null): string[] {
+    function getDependencies(t: Tree, key: string | null): string[] {
         if (key === null) return [];
 
         let ft = tree.flatten(t);

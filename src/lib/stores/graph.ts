@@ -104,9 +104,20 @@ const store: Readable<Graph> = derived([config, tree], ([c, t], set, update) => 
 
 /*------------------------------- Functions ----------------------------------*/
 
+// Return a list of files that are included by the target file
+function getDependencies(id: string): string[] {
+    return [];
+}
+
+// Return a list of files that include the target file
+function getDependents(id: string): string[] {
+    return [];
+}
+
 /*-------------------------------- Exports -----------------------------------*/
 
 export default {
     subscribe: store.subscribe,
+    getDependencies,
 };
 
