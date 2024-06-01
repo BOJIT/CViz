@@ -88,12 +88,13 @@
 <div class="container">
     {#if $tree.nodes}
         <TreeView
-            items={Object.entries($tree.nodes)}
+            nodes={$tree.nodes}
             on:select={(e) => {
+                console.log(e.detail);
                 // handleSelect(e.detail);
             }}
-        >
-            <!-- <span class="tree-entry">
+        />
+        <!-- <span class="tree-entry">
                 {#if !item.items}
                     <Document height="1rem" />
                 {/if}
@@ -135,7 +136,6 @@
                     />
                 {/if}
             </span> -->
-        </TreeView>
     {/if}
 </div>
 
