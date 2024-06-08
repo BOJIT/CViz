@@ -66,14 +66,17 @@ const DEFAULT_STORE: Tree = {
 const store: Writable<Tree> = writable(structuredClone(DEFAULT_STORE));
 
 const selectedNode: Writable<Tree | null> = writable(null);
+const includeRootNodes: Set<Tree> = new Set();
 
 /*------------------------------- Functions ----------------------------------*/
 
 async function init(): Promise<Writable<Tree>> {
+    includeRootNodes.add(get(store))
     return store;
 }
 
 function reset(): void {
+    selectedNode.set(null);
     store.set(structuredClone(DEFAULT_STORE));
 }
 
@@ -139,10 +142,16 @@ function unflattenKey(k: string): Tree | null {
  * @returns a flattened path to a tree node (if found by the resolver)
  * or null on failure to find.
  */
-function resolve(path: string, tree: FlattenedTree, currentPath?: string, searchPaths?: string[]): string | null {
+function resolve(path: string, tree: FlattenedTree, currentPath?: string): string | null {
     // Try relative to current path
     if (`${currentPath}/${path}` in tree)
         return `${currentPath}/${path}`;
+
+    // TODO This is messy. Fix later
+    const searchPaths: string[] = [];
+    includeRootNodes.forEach((s) => {
+        searchPaths.push(flattenKey(s));
+    })
 
     // Try the include roots (in alphabetical order)
     let matches = searchPaths?.map((p) => p.replace(/\/$/, ""))
@@ -247,4 +256,4 @@ export default {
     applyChangesets,
 };
 
-export { selectedNode };
+export { selectedNode, includeRootNodes };

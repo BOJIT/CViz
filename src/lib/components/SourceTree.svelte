@@ -13,7 +13,7 @@
 
     import TreeView from "$lib/components/TreeView.svelte";
 
-    import tree, { selectedNode } from "$lib/stores/tree";
+    import tree, { includeRootNodes, selectedNode } from "$lib/stores/tree";
 
     import project, { activeProject } from "$lib/stores/projects";
 
@@ -25,9 +25,9 @@
 
     /*------------------------------- Lifecycle ------------------------------*/
 
-    tree.subscribe((t) => {
-        console.log(t);
-    });
+    // tree.subscribe((t) => {
+    //     console.log(t);
+    // });
 </script>
 
 <div class="container">
@@ -39,10 +39,12 @@
                 $selectedNode = e.detail;
             }}
             on:change={(e) => {
-                // TEMP: update entire graph
-                $tree = $tree;
+                // Incrementally update list of root nodes
+                if (e.detail.ui.include) includeRootNodes.add(e.detail);
+                else includeRootNodes.delete(e.detail);
 
-                // TODO handle ignore roots
+                // Trigger store update
+                $tree = $tree;
             }}
         />
     {/if}

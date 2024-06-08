@@ -16,7 +16,7 @@ import type { SimulationNodeDatum, SimulationLinkDatum } from "d3-force";
 import type { GraphData } from "force-graph";
 
 import config from "$lib/stores/config";
-import tree from "$lib/stores/tree";
+import tree, { includeRootNodes } from "$lib/stores/tree";
 
 /*--------------------------------- Types ------------------------------------*/
 
@@ -53,6 +53,7 @@ const store: Readable<Graph> = derived([config, tree], ([c, t], set, update) => 
         let f = tree.flatten(t);
         let newLinks: Link[] = [];
 
+        // TODO this should eventually just handle pattern matching
         // Prune out all ignored nodes
         Object.keys(f).forEach((k) => {
             c.ignoreList?.forEach((i) => {
@@ -82,7 +83,6 @@ const store: Readable<Graph> = derived([config, tree], ([c, t], set, update) => 
                     i,
                     f,
                     n[0].slice(0, n[0].lastIndexOf("/")),
-                    c.includeRoots,
                 );
 
                 if (target === null) return; // TODO mark stdlib
