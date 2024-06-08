@@ -12,7 +12,7 @@
     /*-------------------------------- Imports -------------------------------*/
 
     import project, { activeProject } from "$lib/stores/projects";
-    import { selectedNode } from "$lib/stores/tree";
+    import tree, { selectedNode } from "$lib/stores/tree";
 
     /*--------------------------------- Props --------------------------------*/
 
@@ -26,7 +26,7 @@
         <h5 class="status-text">
             {#if $selectedNode !== null}
                 {$project[$activeProject].shortName}<span class="project-prefix"
-                    >/{$selectedNode}</span
+                    >/{tree.flattenKey($selectedNode)}</span
                 >
             {:else}
                 {$project[$activeProject].shortName}

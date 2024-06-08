@@ -18,7 +18,7 @@
     import type { Graph } from "$lib/stores/graph";
 
     import { activeProject } from "$lib/stores/projects";
-    import { selectedNode } from "$lib/stores/tree";
+    import tree, { selectedNode } from "$lib/stores/tree";
 
     /*--------------------------------- Props --------------------------------*/
 
@@ -71,7 +71,8 @@
                 let id: string = n.id as string;
                 let isHeader = headerExtensions.some((h) => id.endsWith(h));
 
-                if ($selectedNode === n.id) return "#EDB120";
+                if ($selectedNode && tree.flattenKey($selectedNode) === n.id)
+                    return "#EDB120";
 
                 // TODO add group colour override
                 return isHeader ? "#0072BD" : "#D95319";
@@ -79,7 +80,7 @@
 
         // Events
         graph.onNodeClick((n, e) => {
-            if (n.id) selectedNode.set(n.id as string);
+            if (n.id) selectedNode.set(tree.unflattenKey(n.id as string));
         });
     });
 </script>

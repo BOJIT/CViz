@@ -36,7 +36,7 @@
             name={$project[$activeProject].shortName}
             tree={$tree}
             on:select={(e) => {
-                if (e.detail.data) $selectedNode = tree.flattenKey(e.detail);
+                $selectedNode = e.detail;
             }}
             on:change={(e) => {
                 // See if we need to update anything

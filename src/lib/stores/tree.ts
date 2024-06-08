@@ -65,7 +65,7 @@ const DEFAULT_STORE: Tree = {
 
 const store: Writable<Tree> = writable(structuredClone(DEFAULT_STORE));
 
-const selectedNode: Writable<string | null> = writable(null);
+const selectedNode: Writable<Tree | null> = writable(null);
 
 /*------------------------------- Functions ----------------------------------*/
 
@@ -112,6 +112,25 @@ function flattenKey(t: Tree): string {
     }
 
     return components.join("/");
+}
+
+/**
+ * @param k Flattened 'Pathlike' key
+ * @returns Tree node, or null if it doesn't exist
+ */
+function unflattenKey(k: string): Tree | null {
+    const components = k.split("/");
+
+    let n = get(store); // Get root node
+    components.forEach((c) => {
+        if (n.nodes && n.nodes[c] !== undefined) {
+            n = n.nodes[c];
+        } else {
+            return null;
+        }
+    })
+
+    return n;
 }
 
 /**
@@ -222,6 +241,7 @@ export default {
     reset,
     flatten,
     flattenKey,
+    unflattenKey,
     resolve,
     applyChangesets,
 };

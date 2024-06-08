@@ -13,8 +13,7 @@
 
     import { Pane, Splitpanes } from "svelte-splitpanes";
 
-    import project, { activeProject } from "$lib/stores/projects";
-    import { selectedNode } from "$lib/stores/tree";
+    import { activeProject } from "$lib/stores/projects";
 
     import NodeInfo from "$lib/components/NodeInfo.svelte";
     import SourceTree from "$lib/components/SourceTree.svelte";
