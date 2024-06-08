@@ -27,6 +27,8 @@
     export let name: string;
     export let tree: Tree;
 
+    export let ignored: boolean = false;
+
     const selectedClasses = "bg-primary-trans";
     const dispatch = createEventDispatcher();
 
@@ -55,16 +57,19 @@
     useRipple={false}
     {selectedClasses}
     on:click={() => {
+        if (ignored) return;
+
         if (tree.nodes) {
             // For 'folder' nodes
             tree.ui.expanded = !tree.ui.expanded;
             tree = tree;
-            dispatch("change", tree);
+            // Changing folder expansion doesn't constitute a 'change' event
+            // dispatch("change", tree);
         }
         dispatch("select", tree);
     }}
 >
-    <div class="flex items-center tree-entry">
+    <div class="flex items-center tree-entry" class:ignored>
         {#if tree.nodes}
             <Icon tip={tree.ui.expanded}>arrow_right</Icon>
         {:else}
@@ -91,6 +96,7 @@
                 <svelte:self
                     name={item}
                     tree={tree.nodes[item]}
+                    ignored={ignored || tree.ui.ignore}
                     on:select
                     on:change
                 />
@@ -111,5 +117,9 @@
         align-items: center;
         justify-content: center;
         font-family: var(--font-monospace);
+    }
+
+    .ignored {
+        filter: brightness(0.5);
     }
 </style>

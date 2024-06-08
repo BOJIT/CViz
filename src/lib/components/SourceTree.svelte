@@ -39,8 +39,10 @@
                 $selectedNode = e.detail;
             }}
             on:change={(e) => {
-                // See if we need to update anything
-                console.log(e.detail);
+                // TEMP: update entire graph
+                $tree = $tree;
+
+                // TODO handle ignore roots
             }}
         />
     {/if}
@@ -97,7 +99,7 @@
 
         background-color: #1d1d1df1;
 
-        max-height: calc(100vh - 3.8rem);
+        max-height: calc(100vh - 3.8rem - 2.5rem);
         overflow: scroll;
     }
 </style>

@@ -63,6 +63,8 @@
 
         padding: 1rem;
 
+        max-height: calc(100vh - 3.8rem - 2.5rem);
+
         background-color: #1d1d1df1;
     }
 

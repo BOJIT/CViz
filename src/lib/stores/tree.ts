@@ -81,18 +81,19 @@ function reset(): void {
  * @param t Top level tree component (when not calling recursively)
  * @param parent parent node string
  * @param res Result of previous recursion
- * @returns
+ * @returns a flattened tree
+ *
+ * @note by default children of ignored nodes are not parsed
  */
 function flatten(t: Tree, parent?: string, res: FlattenedTree = {}): FlattenedTree {
-    if (!(t.nodes)) return res;
+    if (t.data || t.ui.ignore) return res;
 
     Object.entries(t.nodes).forEach((n) => {
         let name = parent ? parent + '/' + n[0] : n[0];
         if (n[1].nodes) {
             flatten(n[1], name, res);
         } else {
-            if (n[1].data)
-                res[name] = n[1].data;
+            res[name] = n[1].data;
         }
     })
 
