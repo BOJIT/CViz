@@ -20,6 +20,8 @@ import { activeProject } from "$lib/stores/projects";
 
 type UIState = {
     expanded: boolean,
+    include: boolean,
+    ignore: boolean,
     groupColour?: string,
 };
 
@@ -51,9 +53,10 @@ export type Tree = TreeProps & ({
 
 const DEFAULT_STORE: Tree = {
     parent: null,
-    // NOTE: we never see the top node's UI state
     ui: {
         expanded: true,
+        include: true,
+        ignore: false,
     },
     nodes: {}
 }
@@ -141,7 +144,7 @@ function applyChangesets(changesets: FileChangeset[]) {
 
                             // Populate child if missing (initialise defaults)
                             if (t.nodes[treeComponents[i]] === undefined)
-                                t.nodes[treeComponents[i]] = { parent: t, ui: { expanded: false }, nodes: {} };
+                                t.nodes[treeComponents[i]] = { parent: t, ui: { expanded: false, include: false, ignore: false }, nodes: {} };
 
                             p = t;  // Make current node the parent by REF
                             t = t.nodes[treeComponents[i]];  // move down into the tree by REF

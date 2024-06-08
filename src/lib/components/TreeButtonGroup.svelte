@@ -55,7 +55,7 @@
         class="toggle"
         on:click|stopPropagation={() => {
             include = !include;
-            dispatch("include", include);
+            dispatch("change");
         }}
     >
         {#if include}
@@ -69,7 +69,7 @@
         class="toggle"
         on:click|stopPropagation={() => {
             ignore = !ignore;
-            dispatch("ignore", ignore);
+            dispatch("change");
         }}
     >
         {#if ignore}

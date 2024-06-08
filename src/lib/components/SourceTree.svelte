@@ -13,55 +13,52 @@
 
     import TreeView from "$lib/components/TreeView.svelte";
 
-    import tree, { type Tree } from "$lib/stores/tree";
+    import tree from "$lib/stores/tree";
 
-    /*--------------------------------- Types --------------------------------*/
+    import project, { activeProject } from "$lib/stores/projects";
 
-    // interface TreeViewEntry extends TreeViewItem {
-    //     path?: string;
-    //     ref?: Tree;
-    // }
+    // Use project name as workspace root for now
 
     /*--------------------------------- Props --------------------------------*/
 
     /*-------------------------------- Methods -------------------------------*/
 
-    function pushTreeEntry(
-        t: Tree,
-        currentPath: string = "",
-        tv: TreeViewEntry[] = [],
-    ) {
-        if (t.items) {
-            Object.entries(t.items)
-                .sort((a: [string, Tree], b: [string, Tree]) => {
-                    // Directories first
-                    if (a[1].items && !b[1].items) return -1;
-                    if (b[1].items && !a[1].items) return 1;
+    // function pushTreeEntry(
+    //     t: Tree,
+    //     currentPath: string = "",
+    //     tv: TreeViewEntry[] = [],
+    // ) {
+    //     if (t.items) {
+    //         Object.entries(t.items)
+    //             .sort((a: [string, Tree], b: [string, Tree]) => {
+    //                 // Directories first
+    //                 if (a[1].items && !b[1].items) return -1;
+    //                 if (b[1].items && !a[1].items) return 1;
 
-                    // Alphabetical compare
-                    if (a[0] < b[0]) return -1;
-                    if (a[0] > b[0]) return 1;
+    //                 // Alphabetical compare
+    //                 if (a[0] < b[0]) return -1;
+    //                 if (a[0] > b[0]) return 1;
 
-                    return 0;
-                })
-                .forEach((n) => {
-                    let path =
-                        currentPath === "" ? n[0] : `${currentPath}/${n[0]}`;
-                    const entry: TreeViewEntry = {
-                        text: n[0],
-                        path: path,
-                        ref: n[1], // Pass reference to original treeview
-                        expanded: !!n[1].data?.ui?.expanded,
-                    };
-                    const items = pushTreeEntry(n[1], path);
-                    if (items.length > 0) entry.items = items;
+    //                 return 0;
+    //             })
+    //             .forEach((n) => {
+    //                 let path =
+    //                     currentPath === "" ? n[0] : `${currentPath}/${n[0]}`;
+    //                 const entry: TreeViewEntry = {
+    //                     text: n[0],
+    //                     path: path,
+    //                     ref: n[1], // Pass reference to original treeview
+    //                     expanded: !!n[1].data?.ui?.expanded,
+    //                 };
+    //                 const items = pushTreeEntry(n[1], path);
+    //                 if (items.length > 0) entry.items = items;
 
-                    tv.push(entry);
-                });
-        }
+    //                 tv.push(entry);
+    //             });
+    //     }
 
-        return tv;
-    }
+    //     return tv;
+    // }
 
     // function handleSelect(i: TreeViewEntry) {
     //     // Write back UI data to Tree
@@ -80,21 +77,29 @@
     // }
 
     /*------------------------------- Lifecycle ------------------------------*/
+
     tree.subscribe((t) => {
         console.log(t);
     });
 </script>
 
 <div class="container">
-    {#if $tree.nodes}
+    {#if $activeProject}
         <TreeView
-            nodes={$tree.nodes}
+            name={$project[$activeProject].shortName}
+            tree={$tree}
             on:select={(e) => {
                 console.log(e.detail);
-                // handleSelect(e.detail);
+            }}
+            on:change={(e) => {
+                // See if we need to update anything
+                console.log(e.detail);
             }}
         />
-        <!-- <span class="tree-entry">
+    {/if}
+</div>
+
+<!-- <span class="tree-entry">
                 {#if !item.items}
                     <Document height="1rem" />
                 {/if}
@@ -136,8 +141,6 @@
                     />
                 {/if}
             </span> -->
-    {/if}
-</div>
 
 <style>
     .container {
