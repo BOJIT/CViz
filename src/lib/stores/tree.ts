@@ -34,6 +34,7 @@ type FlattenedTree = {
 };
 
 type TreeProps = {
+    name: string,   // filename
     parent: Tree | null, // Null means we are the top of the tree
     ui: UIState,
 };
@@ -44,7 +45,7 @@ export type Tree = TreeProps & ({
     nodes?: never,
 } | {
     nodes: {
-        [key: string]: Tree,
+        [key: string]: Tree,    // key is filename
     },
     data?: never,
 });
@@ -52,6 +53,7 @@ export type Tree = TreeProps & ({
 /*--------------------------------- State ------------------------------------*/
 
 const DEFAULT_STORE: Tree = {
+    name: "root",
     parent: null,
     ui: {
         expanded: true,
@@ -75,6 +77,12 @@ function reset(): void {
     store.set(structuredClone(DEFAULT_STORE));
 }
 
+/**
+ * @param t Top level tree component (when not calling recursively)
+ * @param parent parent node string
+ * @param res Result of previous recursion
+ * @returns
+ */
 function flatten(t: Tree, parent?: string, res: FlattenedTree = {}): FlattenedTree {
     if (!(t.nodes)) return res;
 
@@ -89,6 +97,21 @@ function flatten(t: Tree, parent?: string, res: FlattenedTree = {}): FlattenedTr
     })
 
     return res;
+}
+
+/**
+ * @param t Tree node within file tree
+ * @returns Flattened tree path (with / separator)
+ */
+function flattenKey(t: Tree): string {
+    let n = t;
+    let components = [];
+    while (n.parent !== null) {
+        components.unshift(n.name);
+        n = n.parent;
+    }
+
+    return components.join("/");
 }
 
 /**
@@ -144,7 +167,12 @@ function applyChangesets(changesets: FileChangeset[]) {
 
                             // Populate child if missing (initialise defaults)
                             if (t.nodes[treeComponents[i]] === undefined)
-                                t.nodes[treeComponents[i]] = { parent: t, ui: { expanded: false, include: false, ignore: false }, nodes: {} };
+                                t.nodes[treeComponents[i]] = {
+                                    name: treeComponents[i],
+                                    parent: t,
+                                    ui: { expanded: false, include: false, ignore: false },
+                                    nodes: {}
+                                };
 
                             p = t;  // Make current node the parent by REF
                             t = t.nodes[treeComponents[i]];  // move down into the tree by REF
@@ -193,6 +221,7 @@ export default {
     init,
     reset,
     flatten,
+    flattenKey,
     resolve,
     applyChangesets,
 };

@@ -13,8 +13,6 @@
 
     import { onMount } from "svelte";
 
-    import type { SimulationNodeDatum, SimulationLinkDatum } from "d3-force";
-
     import ForceGraph, { type ForceGraphInstance } from "force-graph";
 
     import type { Graph } from "$lib/stores/graph";
@@ -49,7 +47,10 @@
     });
 
     // Recompute graph on data change
-    $: graph?.graphData(data);
+    $: {
+        graph?.graphData(data);
+        graph?.d3ReheatSimulation();
+    }
 
     onMount(() => {
         graph = ForceGraph();
@@ -61,6 +62,7 @@
             .linkWidth(() => 2)
             .dagMode("td")
             .dagLevelDistance(40)
+            // .onDagError(() => {})
             .linkDirectionalParticles(2)
             .linkDirectionalParticleSpeed(0.005)
             .linkDirectionalParticleWidth(3)

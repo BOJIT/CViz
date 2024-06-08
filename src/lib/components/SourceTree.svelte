@@ -13,7 +13,7 @@
 
     import TreeView from "$lib/components/TreeView.svelte";
 
-    import tree from "$lib/stores/tree";
+    import tree, { selectedNode } from "$lib/stores/tree";
 
     import project, { activeProject } from "$lib/stores/projects";
 
@@ -22,59 +22,6 @@
     /*--------------------------------- Props --------------------------------*/
 
     /*-------------------------------- Methods -------------------------------*/
-
-    // function pushTreeEntry(
-    //     t: Tree,
-    //     currentPath: string = "",
-    //     tv: TreeViewEntry[] = [],
-    // ) {
-    //     if (t.items) {
-    //         Object.entries(t.items)
-    //             .sort((a: [string, Tree], b: [string, Tree]) => {
-    //                 // Directories first
-    //                 if (a[1].items && !b[1].items) return -1;
-    //                 if (b[1].items && !a[1].items) return 1;
-
-    //                 // Alphabetical compare
-    //                 if (a[0] < b[0]) return -1;
-    //                 if (a[0] > b[0]) return 1;
-
-    //                 return 0;
-    //             })
-    //             .forEach((n) => {
-    //                 let path =
-    //                     currentPath === "" ? n[0] : `${currentPath}/${n[0]}`;
-    //                 const entry: TreeViewEntry = {
-    //                     text: n[0],
-    //                     path: path,
-    //                     ref: n[1], // Pass reference to original treeview
-    //                     expanded: !!n[1].data?.ui?.expanded,
-    //                 };
-    //                 const items = pushTreeEntry(n[1], path);
-    //                 if (items.length > 0) entry.items = items;
-
-    //                 tv.push(entry);
-    //             });
-    //     }
-
-    //     return tv;
-    // }
-
-    // function handleSelect(i: TreeViewEntry) {
-    //     // Write back UI data to Tree
-    //     if (i.ref) {
-    //         // Create intermediate objects if they don't exist
-    //         i.ref.data = i.ref.data || {};
-    //         i.ref.data.ui = i.ref.data.ui || {};
-
-    //         i.ref.data.ui.expanded = i.expanded; // This doesn't need to trigger a tree store assignment
-    //     }
-
-    //     let key = i.path;
-    //     let ft = tree.flatten($tree);
-
-    //     if (key && key in ft) $selectedNode = key;
-    // }
 
     /*------------------------------- Lifecycle ------------------------------*/
 
@@ -89,7 +36,7 @@
             name={$project[$activeProject].shortName}
             tree={$tree}
             on:select={(e) => {
-                console.log(e.detail);
+                if (e.detail.data) $selectedNode = tree.flattenKey(e.detail);
             }}
             on:change={(e) => {
                 // See if we need to update anything

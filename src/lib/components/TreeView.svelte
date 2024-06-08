@@ -60,8 +60,6 @@
             tree.ui.expanded = !tree.ui.expanded;
             tree = tree;
             dispatch("change", tree);
-        } else {
-            // For 'file' nodes
         }
         dispatch("select", tree);
     }}
@@ -70,7 +68,7 @@
         {#if tree.nodes}
             <Icon tip={tree.ui.expanded}>arrow_right</Icon>
         {:else}
-            <Document height="1rem" />
+            <Document height="18px" />
         {/if}
         {name}
         {#if tree.nodes}
@@ -100,52 +98,6 @@
         </List>
     </div>
 {/if}
-
-<!-- <List items={Object.entries(nodes)} {...$$props}>
-    <span slot="item" let:item>
-        <ListItem
-            {...$$props}
-            {selectedClasses}
-            useRipple={false}
-            selected={selected === item[1]}
-            on:click={() => {
-                if (item[1].data) {
-                    // For 'file' nodes
-                    selected = item[1];
-                } else {
-                    // For 'folder' nodes
-                    item[1].ui.expanded = !item[1].ui.expanded;
-                }
-                item[1] = item[1];
-                dispatch("select", item[1]);
-            }}
-        >
-            <div class="flex items-center tree-entry">
-                {#if item[1].nodes}
-                    <Icon tip={item[1].ui.expanded}>arrow_right</Icon>
-                {:else}
-                    <Document height="1rem" />
-                {/if}
-                {item[0]}
-                {#if item[1].nodes}
-                    <TreeButtonGroup />
-                {/if}
-            </div>
-        </ListItem>
-
-        {#if item[1].nodes && item[1].ui.expanded}
-            <div in:slide class="ml-6">
-                <svelte:self
-                    nodes={item[1].nodes}
-                    level={level + 1}
-                    {...$$props}
-                    on:click
-                    on:select
-                />
-            </div>
-        {/if}
-    </span>
-</List> -->
 
 <style>
     .flex :global(li) {

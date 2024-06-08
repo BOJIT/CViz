@@ -59,9 +59,9 @@
         }}
     >
         {#if include}
-            <RadioButtonOn height="1rem" />
+            <RadioButtonOn height="20px" />
         {:else}
-            <RadioButtonOff height="1rem" />
+            <RadioButtonOff height="20px" />
         {/if}
     </button>
 
@@ -73,9 +73,9 @@
         }}
     >
         {#if ignore}
-            <RemoveCircle height="1rem" />
+            <RemoveCircle height="20px" />
         {:else}
-            <CheckmarkCircle height="1rem" />
+            <CheckmarkCircle height="20px" />
         {/if}
     </button>
 
@@ -158,8 +158,8 @@
     }
 
     .col-circle {
-        height: 0.8rem;
-        width: 0.8rem;
+        height: 17px;
+        width: 17px;
         border-radius: 50%;
     }
 

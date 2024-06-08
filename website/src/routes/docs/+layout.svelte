@@ -19,7 +19,7 @@
         type NavItem,
     } from "@bojit/svelte-components/layout";
 
-    import { Eyedrop, Home } from "@svicons/ionicons-outline";
+    import { Home } from "@svicons/ionicons-outline";
 
     import logo from "$lib/assets/img/Logo.png";
 
