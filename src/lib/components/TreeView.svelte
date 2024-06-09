@@ -18,7 +18,7 @@
 
     import { Document } from "@svicons/ionicons-outline";
 
-    import type { Tree } from "$lib/stores/tree";
+    import type { Tree, TreeUpdate } from "$lib/stores/tree";
 
     import TreeButtonGroup from "$lib/components/TreeButtonGroup.svelte";
 
@@ -50,6 +50,10 @@
             .map((e) => e[0]);
     }
 
+    function update(u: TreeUpdate) {
+        dispatch("change", u);
+    }
+
     /*------------------------------- Lifecycle ------------------------------*/
 </script>
 
@@ -62,9 +66,8 @@
         if (tree.nodes) {
             // For 'folder' nodes
             tree.ui.expanded = !tree.ui.expanded;
-            tree = tree;
-            // Changing folder expansion doesn't constitute a 'change' event
-            // dispatch("change", tree);
+            tree = tree; // Trigger reassigment for tree and children
+            update({ tree: tree, event: "expansion" });
         }
         dispatch("select", tree);
     }}
@@ -79,10 +82,16 @@
         {#if tree.nodes}
             <TreeButtonGroup
                 bind:include={tree.ui.include}
+                on:include={() => {
+                    update({ tree: tree, event: "include" });
+                }}
                 bind:ignore={tree.ui.ignore}
-                bind:colour={tree.ui.groupColour}
-                on:change={() => {
-                    dispatch("change", tree);
+                on:ignore={() => {
+                    update({ tree: tree, event: "ignore" });
+                }}
+                bind:colour={tree.ui.colour}
+                on:colour={() => {
+                    update({ tree: tree, event: "colour" });
                 }}
             />
         {/if}

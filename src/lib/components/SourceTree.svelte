@@ -24,10 +24,6 @@
     /*-------------------------------- Methods -------------------------------*/
 
     /*------------------------------- Lifecycle ------------------------------*/
-
-    // tree.subscribe((t) => {
-    //     console.log(t);
-    // });
 </script>
 
 <div class="container">
@@ -39,59 +35,11 @@
                 $selectedNode = e.detail;
             }}
             on:change={(e) => {
-                // Incrementally update list of root nodes
-                if (e.detail.ui.include) includeRootNodes.add(e.detail);
-                else includeRootNodes.delete(e.detail);
-
-                // Trigger store update
-                $tree = $tree;
+                tree.handlePartialUpdate(e.detail);
             }}
         />
     {/if}
 </div>
-
-<!-- <span class="tree-entry">
-                {#if !item.items}
-                    <Document height="1rem" />
-                {/if}
-                {item.text}
-                {#if item.items}
-                    <TreeButtonGroup
-                        include={$config.includeRoots?.includes(item.path)}
-                        ignore={$config.ignoreList?.includes(item.path)}
-                        on:include={(e) => {
-                            config.update((c) => {
-                                if (e.detail === true) {
-                                    c.includeRoots?.push(item.path);
-                                } else {
-                                    if (c.includeRoots) {
-                                        c.includeRoots = c.includeRoots.filter(
-                                            (i) => i !== item.path,
-                                        );
-                                    }
-                                }
-
-                                return c;
-                            });
-                        }}
-                        on:ignore={(e) => {
-                            config.update((c) => {
-                                if (e.detail === true) {
-                                    c.ignoreList?.push(item.path);
-                                } else {
-                                    if (c.ignoreList) {
-                                        c.ignoreList = c.ignoreList.filter(
-                                            (i) => i !== item.path,
-                                        );
-                                    }
-                                }
-
-                                return c;
-                            });
-                        }}
-                    />
-                {/if}
-            </span> -->
 
 <style>
     .container {

@@ -55,7 +55,7 @@
         class="toggle"
         on:click|stopPropagation={() => {
             include = !include;
-            dispatch("change");
+            dispatch("include");
         }}
     >
         {#if include}
@@ -69,7 +69,7 @@
         class="toggle"
         on:click|stopPropagation={() => {
             ignore = !ignore;
-            dispatch("change");
+            dispatch("ignore");
         }}
     >
         {#if ignore}
@@ -107,6 +107,7 @@
                         style:background-color={c !== "none" ? c : null}
                         on:click={() => {
                             colour = c;
+                            dispatch("colour");
                         }}
                     />
                 {/each}
@@ -134,17 +135,18 @@
 
     .palette {
         position: absolute;
-        top: 1rem;
-        left: 1rem;
-        width: 5.4rem;
+        top: -20px;
+        left: 30px;
+        height: 54px;
+        width: 102px;
 
-        border-radius: 0.7rem;
+        border-radius: 9px;
         background-color: var(--color-gray-700);
-        padding: 0.5rem;
+        padding: 6px;
 
         display: flex;
         flex-wrap: wrap;
-        gap: 0.4rem;
+        gap: 6px;
 
         z-index: 30;
     }
@@ -158,8 +160,8 @@
     }
 
     .col-circle {
-        height: 17px;
-        width: 17px;
+        height: 18px;
+        width: 18px;
         border-radius: 50%;
     }
 

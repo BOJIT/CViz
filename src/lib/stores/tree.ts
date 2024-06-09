@@ -22,7 +22,7 @@ type UIState = {
     expanded: boolean,
     include: boolean,
     ignore: boolean,
-    groupColour?: string,
+    colour?: string,
 };
 
 type NodeData = {
@@ -50,6 +50,11 @@ export type Tree = TreeProps & ({
     data?: never,
 });
 
+export type TreeUpdate = {
+    tree: Tree,
+    event: "expansion" | "include" | "ignore" | "colour",
+};
+
 /*--------------------------------- State ------------------------------------*/
 
 const DEFAULT_STORE: Tree = {
@@ -66,15 +71,48 @@ const DEFAULT_STORE: Tree = {
 const store: Writable<Tree> = writable(structuredClone(DEFAULT_STORE));
 
 const selectedNode: Writable<Tree | null> = writable(null);
+
 const includeRootNodes: Set<Tree> = new Set();
+
+/*-------------------------------- Helpers -----------------------------------*/
+
+/**
+ * Walk tree in breadth-first order and perform an arbitrary function
+ * @param t Tree node
+ * @param func function to execute
+ * @returns void
+ */
+function treeWalk(t: Tree, func: (n: Tree) => void): void {
+    func(t);    // Perform passed function
+
+    if (!t.nodes) return;
+    Object.entries(t.nodes).forEach((n) => {
+        treeWalk(n[1], func);
+    })
+}
 
 /*------------------------------- Functions ----------------------------------*/
 
+/**
+ * Initialise the store
+ * @returns Instance of the store (async)
+ */
 async function init(): Promise<Writable<Tree>> {
-    includeRootNodes.add(get(store))
+
+    // Assignments to the store always trigger a full recompute of derived state.
+    // Store updates should be considered an expensive operation
+    // store.subscribe((t) => {
+    //     includeRootNodes.clear();
+    //     treeWalk(t, (n: Tree) => {
+    //         if (n.ui.include) includeRootNodes.add(n);
+    //     });
+    // });
     return store;
 }
 
+/**
+ * Reset the tree store to its default (empty) state
+ */
 function reset(): void {
     selectedNode.set(null);
     store.set(structuredClone(DEFAULT_STORE));
@@ -138,6 +176,39 @@ function unflattenKey(k: string): Tree | null {
 }
 
 /**
+ * Handle small changes to tree: when full re-computation isn't viable
+ * @param u Tree Update Event
+ */
+function handlePartialUpdate(u: TreeUpdate): void {
+    console.log(u);
+    switch (u.event) {
+        case "expansion":
+            // No update action needs to be taken
+            break;
+
+        case "include":
+            // Check if node should be in include root list
+            if (u.tree.ui.include) includeRootNodes.add(u.tree);
+            else includeRootNodes.delete(u.tree);
+            store.update(s => s);
+            break;
+
+        case "ignore":
+            // TEMP: Trigger an update
+            store.update(s => s);
+            break;
+
+        case "colour":
+            // TEMP: Trigger an update
+            store.update(s => s);
+            break;
+
+        default:
+            break;
+    }
+}
+
+/**
  * @param path path of include in C/C++ file
  * @returns a flattened path to a tree node (if found by the resolver)
  * or null on failure to find.
@@ -165,6 +236,10 @@ function resolve(path: string, tree: FlattenedTree, currentPath?: string): strin
     return null;
 }
 
+/**
+ * Apply changes to the tree based on underlying changes in the filesystem
+ * @param changesets Array of changesets to apply
+ */
 function applyChangesets(changesets: FileChangeset[]) {
     store.update((s) => {
         // Pre-flight checks
@@ -252,6 +327,7 @@ export default {
     flatten,
     flattenKey,
     unflattenKey,
+    handlePartialUpdate,
     resolve,
     applyChangesets,
 };
