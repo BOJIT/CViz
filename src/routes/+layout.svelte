@@ -22,6 +22,8 @@
     import { themeOverlay } from "$lib/stores/overlays";
     import settings from "$lib/stores/settings";
     import projects from "$lib/stores/projects";
+    import tree from "$lib/stores/tree";
+
     import events from "$lib/utils/events";
 
     import palette from "$lib/palette";
@@ -45,6 +47,7 @@
         await events.init();
 
         // Initialise local storage databases
+        await tree.init();
         await settings.init();
         await projects.init();
 

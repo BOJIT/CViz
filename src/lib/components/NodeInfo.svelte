@@ -13,9 +13,7 @@
 
     import { get } from "svelte/store";
 
-    import { selectedNode, type NestedTree } from "$lib/stores/tree";
-
-    import tree from "$lib/stores/tree";
+    import tree, { selectedNode, type Tree } from "$lib/stores/tree";
 
     /*--------------------------------- Props --------------------------------*/
 
@@ -23,34 +21,26 @@
 
     /*-------------------------------- Methods -------------------------------*/
 
-    function getDependencies(t: NestedTree, key: string | null): string[] {
-        if (key === null) return [];
+    function getDependencies(t: Tree | null): string[] {
+        if (t && t.data) return t.data.dependencies;
 
-        let ft = tree.flatten(t);
-        if (!(key in ft)) return [];
-
-        return ft[key].dependencies;
+        return [];
     }
 
     /*------------------------------- Lifecycle ------------------------------*/
 
     selectedNode.subscribe((s) => {
-        if (!s) {
-            dependencies = [];
-            return;
-        }
-
-        dependencies = getDependencies(get(tree), s);
+        dependencies = getDependencies(s);
     });
 
     tree.subscribe((t) => {
-        dependencies = getDependencies(t, get(selectedNode));
+        dependencies = getDependencies(get(selectedNode));
     });
 </script>
 
 <div class="container">
-    {#if $selectedNode}
-        <code class="title">{$selectedNode}</code>
+    {#if $selectedNode !== null}
+        <code class="title">{tree.flattenKey($selectedNode)}</code>
         <hr />
         <br />
         <code class="title">Dependencies</code>
@@ -72,6 +62,8 @@
         pointer-events: all;
 
         padding: 1rem;
+
+        max-height: calc(100vh - 3.8rem - 2.5rem);
 
         background-color: #1d1d1df1;
     }

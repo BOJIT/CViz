@@ -1,112 +1,134 @@
 <!--
  * @file TreeView.svelte
  * @author James Bennion-Pedley
- * @brief Genericised Tree-view component
+ * @brief Tree-view rendering of Tree data site
  * @date 02/01/2024
  *
  * @copyright Copyright (c) 2024
  *
 -->
 
-<script lang="ts" context="module">
-    /*--------------------------------- Types --------------------------------*/
-
-    export interface TreeViewItem {
-        text: string;
-        expanded?: boolean;
-        items?: TreeViewItem[];
-    }
-</script>
-
 <script lang="ts">
-    // NOTE this file is modified from the Smelte library version
-
     /*-------------------------------- Imports -------------------------------*/
-
-    import { Icon, List, ListItem } from "@bojit/svelte-components/smelte";
 
     import { createEventDispatcher } from "svelte";
     import { slide } from "svelte/transition";
 
+    import { Icon, List, ListItem } from "@bojit/svelte-components/smelte";
+
+    import { Document } from "@svicons/ionicons-outline";
+
+    import type { Tree, TreeUpdate } from "$lib/stores/tree";
+
+    import TreeButtonGroup from "$lib/components/TreeButtonGroup.svelte";
+
     /*--------------------------------- Props --------------------------------*/
 
-    export let items: TreeViewItem[] = [];
-    export const value = "";
-    export const text = "";
-    export const dense: boolean = false;
-    export const navigation = false;
-    export const select = false;
-    export let level = 0;
-    export let showExpandIcon = true;
-    export let expandIcon = "arrow_right";
-    export let selectable = true;
-    export let selected: TreeViewItem | null = null;
-    export let selectedClasses = "bg-primary-trans";
+    export let name: string;
+    export let tree: Tree;
 
+    export let ignored: boolean = false;
+
+    const selectedClasses = "bg-primary-trans";
     const dispatch = createEventDispatcher();
-
-    let refreshExpansion = false; // Horrendous hack
 
     /*-------------------------------- Methods -------------------------------*/
 
-    function toggle(i: TreeViewItem) {
-        // For 'files'
-        if (selectable && !i.items) {
-            selected = i;
-        } else {
-            // For 'folders'
-            i.expanded = !i.expanded;
-            refreshExpansion = !refreshExpansion;
-        }
+    function getKeysInOrder(nodes: { [key: string]: Tree }): string[] {
+        return Object.entries(nodes)
+            .sort((a: [string, Tree], b: [string, Tree]) => {
+                // Directories first
+                if (a[1].nodes && !b[1].nodes) return -1;
+                if (b[1].nodes && !a[1].nodes) return 1;
 
-        dispatch("select", i);
+                // Alphabetical compare
+                if (a[0] < b[0]) return -1;
+                if (a[0] > b[0]) return 1;
+
+                return 0;
+            })
+            .map((e) => e[0]);
+    }
+
+    function update(u: TreeUpdate) {
+        dispatch("change", u);
     }
 
     /*------------------------------- Lifecycle ------------------------------*/
 </script>
 
-<List {items} {...$$props}>
-    <span slot="item" let:item>
-        <ListItem
-            useRipple={false}
-            {item}
-            {...$$props}
-            {...item}
-            selected={selectable && selected === item}
-            {selectedClasses}
-            on:click={() => toggle(item)}
-        >
-            <div class="flex items-center">
-                {#if showExpandIcon && !item.hideArrow && item.items}
-                    <Icon
-                        tip={item.expanded
-                            ? item.expanded
-                            : false && refreshExpansion}>{expandIcon}</Icon
-                    >
-                {/if}
-                <slot {item} {refreshExpansion}><span>{item.text}</span></slot>
-            </div>
-        </ListItem>
+<ListItem
+    useRipple={false}
+    {selectedClasses}
+    on:click={() => {
+        if (ignored) return;
 
-        {#if item.items && item.expanded}
-            <div in:slide class="ml-6">
-                <svelte:self
-                    {...$$props}
-                    items={item.items}
-                    level={level + 1}
-                    let:item
-                    on:click
-                    on:select
-                >
-                    <slot {item} {refreshExpansion} />
-                </svelte:self>
-            </div>
+        if (tree.nodes) {
+            // For 'folder' nodes
+            tree.ui.expanded = !tree.ui.expanded;
+            tree = tree; // Trigger reassigment for tree and children
+            update({ tree: tree, event: "expansion" });
+        }
+        dispatch("select", tree);
+    }}
+>
+    <div class="flex items-center tree-entry" class:ignored>
+        {#if tree.nodes}
+            <Icon tip={tree.ui.expanded}>arrow_right</Icon>
+        {:else}
+            <Document height="18px" />
         {/if}
-    </span>
-</List>
+        {name}
+        {#if tree.nodes}
+            <TreeButtonGroup
+                bind:include={tree.ui.include}
+                on:include={() => {
+                    update({ tree: tree, event: "include" });
+                }}
+                bind:ignore={tree.ui.ignore}
+                on:ignore={() => {
+                    update({ tree: tree, event: "ignore" });
+                }}
+                bind:colour={tree.ui.colour}
+                on:colour={() => {
+                    update({ tree: tree, event: "colour" });
+                }}
+            />
+        {/if}
+    </div>
+</ListItem>
+
+{#if tree.ui.expanded && tree.nodes}
+    <div in:slide class="ml-6">
+        <List items={getKeysInOrder(tree.nodes)}>
+            <span slot="item" let:item>
+                <svelte:self
+                    name={item}
+                    tree={tree.nodes[item]}
+                    ignored={ignored || tree.ui.ignore}
+                    on:select
+                    on:change
+                />
+            </span>
+        </List>
+    </div>
+{/if}
 
 <style>
     .flex :global(li) {
         overflow: visible !important;
+    }
+
+    .tree-entry {
+        display: flex;
+        gap: 0.6rem;
+
+        align-items: center;
+        justify-content: center;
+        font-family: var(--font-monospace);
+    }
+
+    .ignored {
+        filter: brightness(0.5);
     }
 </style>

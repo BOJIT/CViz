@@ -13,7 +13,7 @@
 
     import { Pane, Splitpanes } from "svelte-splitpanes";
 
-    import project, { activeProject } from "$lib/stores/projects";
+    import { activeProject } from "$lib/stores/projects";
 
     import NodeInfo from "$lib/components/NodeInfo.svelte";
     import SourceTree from "$lib/components/SourceTree.svelte";
@@ -27,27 +27,15 @@
 
 {#if $activeProject !== null}
     <div class="panes">
-        <Splitpanes horizontal theme="no-splitter">
-            <Pane>
-                <Splitpanes>
-                    <Pane snapSize={10} size={30} maxSize={40}>
-                        <SourceTree />
-                    </Pane>
-
-                    <Pane minSize={30} />
-
-                    <Pane snapSize={10} size={30} maxSize={40}>
-                        <NodeInfo />
-                    </Pane>
-                </Splitpanes>
+        <Splitpanes>
+            <Pane snapSize={10} size={30} maxSize={40}>
+                <SourceTree />
             </Pane>
 
-            <Pane size={6} minSize={6} maxSize={6}>
-                <div class="statusbar">
-                    <h5 class="project-name">
-                        {$project[$activeProject].shortName}
-                    </h5>
-                </div>
+            <Pane minSize={30} />
+
+            <Pane snapSize={10} size={30} maxSize={40}>
+                <NodeInfo />
             </Pane>
         </Splitpanes>
     </div>
@@ -75,15 +63,5 @@
         position: relative;
         display: grid;
         place-items: center;
-    }
-
-    .statusbar {
-        height: 100%;
-        background-color: rgba(37, 49, 42, 0.952);
-    }
-
-    .project-name {
-        padding: 0.5rem;
-        font-family: var(--font-monospace);
     }
 </style>

@@ -19,81 +19,186 @@ import { activeProject } from "$lib/stores/projects";
 /*--------------------------------- Types ------------------------------------*/
 
 type UIState = {
-    expanded?: boolean,
-    groupColour?: string,
+    expanded: boolean,
+    include: boolean,
+    ignore: boolean,
+    colour?: string,
 };
 
 type NodeData = {
-    dependencies?: string[],
-    ui?: UIState,
+    dependencies: string[],
 };
 
 type FlattenedTree = {
     [key: string]: NodeData,
 };
 
-export type NestedTree = {
-    data?: NodeData,
-    parent?: NestedTree,    // Points up by reference
-    items?: {
-        [key: string]: NestedTree,
+type TreeProps = {
+    name: string,   // filename
+    parent: Tree | null, // Null means we are the top of the tree
+    ui: UIState,
+};
+
+// A tree entry is either a node (so has data) or a folder (which references nodes)
+export type Tree = TreeProps & ({
+    data: NodeData,
+    nodes?: never,
+} | {
+    nodes: {
+        [key: string]: Tree,    // key is filename
     },
+    data?: never,
+});
+
+export type TreeUpdate = {
+    tree: Tree,
+    event: "expansion" | "include" | "ignore" | "colour",
 };
 
 /*--------------------------------- State ------------------------------------*/
 
-const store: Writable<NestedTree> = writable({});
+const DEFAULT_STORE: Tree = {
+    name: "root",
+    parent: null,
+    ui: {
+        expanded: true,
+        include: true,
+        ignore: false,
+    },
+    nodes: {}
+}
 
-const selectedNode: Writable<string | null> = writable(null);
+const store: Writable<Tree> = writable(structuredClone(DEFAULT_STORE));
+
+const selectedNode: Writable<Tree | null> = writable(null);
+
+/*-------------------------------- Helpers -----------------------------------*/
+
+/**
+ * Walk tree in breadth-first order and perform an arbitrary function
+ * @param t Tree node
+ * @param func function to execute
+ * @returns void
+ */
+// function treeWalk(t: Tree, func: (n: Tree) => void): void {
+//     func(t);    // Perform passed function
+
+//     if (!t.nodes) return;
+//     Object.values(t.nodes).forEach((n) => {
+//         treeWalk(n, func);
+//     })
+// }
 
 /*------------------------------- Functions ----------------------------------*/
 
-async function init(): Promise<Writable<NestedTree>> {
+/**
+ * Initialise the store
+ * @returns Instance of the store (async)
+ */
+async function init(): Promise<Writable<Tree>> {
     return store;
 }
 
+/**
+ * Reset the tree store to its default (empty) state
+ */
 function reset(): void {
-    store.set({});
+    selectedNode.set(null);
+    store.set(structuredClone(DEFAULT_STORE));
 }
 
-function flatten(t: NestedTree, parent?: string, res: FlattenedTree = {}): FlattenedTree {
-    if (!(t.items)) return res;
+/**
+ * @param t Tree node within file tree
+ * @returns Flattened tree path (with / separator)
+ */
+function flattenKey(t: Tree): string {
+    let n = t;
+    let components = [];
+    while (n.parent !== null) {
+        components.unshift(n.name);
+        n = n.parent;
+    }
 
-    Object.entries(t.items).forEach((n) => {
-        let name = parent ? parent + '/' + n[0] : n[0];
-        if (n[1].items) {
-            flatten(n[1], name, res);
+    return components.join("/");
+}
+
+/**
+ * @param k Flattened 'Pathlike' key
+ * @returns Tree node, or null if it doesn't exist
+ */
+function unflattenKey(k: string): Tree | null {
+    const components = k.split("/");
+
+    let n = get(store); // Get root node
+    components.forEach((c) => {
+        if (n.nodes && n.nodes[c] !== undefined) {
+            n = n.nodes[c];
         } else {
-            if (n[1].data)
-                res[name] = n[1].data;
+            return null;
         }
     })
 
-    return res;
+    return n;
+}
+
+/**
+ * Handle small changes to tree: when full re-computation isn't viable
+ * @param u Tree Update Event
+ */
+function handlePartialUpdate(u: TreeUpdate): void {
+    switch (u.event) {
+        case "expansion":
+            // No update action needs to be taken
+            break;
+
+        case "include":
+            // TEMP: trigger an update
+            store.update(s => s);
+            break;
+
+        case "ignore":
+            // TEMP: Trigger an update
+            store.update(s => s);
+            break;
+
+        case "colour":
+            // TEMP: Trigger an update
+            store.update(s => s);
+            break;
+
+        default:
+            break;
+    }
 }
 
 /**
  * @param path path of include in C/C++ file
+ * @param roots list of tree nodes to try searching from
  * @returns a flattened path to a tree node (if found by the resolver)
  * or null on failure to find.
  */
-function resolve(path: string, tree: FlattenedTree, currentPath?: string, searchPaths?: string[]): string | null {
-    // Try relative to current path
-    if (`${currentPath}/${path}` in tree)
-        return `${currentPath}/${path}`;
+function resolve(path: string, roots: Tree[] = []): Tree | null {
+    const components = path.split("/");
 
-    // Try the include roots (in alphabetical order)
-    let matches = searchPaths?.map((p) => p.replace(/\/$/, ""))
-        .filter((p) => (`${p}/${path}` in tree)).map((p) => `${p}/${path}`);
-    if (matches?.length) return matches[0];
-
-    // Try from the root
-    if (path in tree)
-        return path;
+    // Note this will return the first match in order of roots passed in.
+    for (const r of roots) {
+        let n: Tree = r;
+        for (const c of components) {
+            if (!n.nodes) break;
+            if (!n.nodes[c]) break;
+            n = n.nodes[c];
+        }
+        // If after iteration, we're on a file node, return as resolved
+        if (n.data) return n;
+    }
 
     return null;
 }
 
+/**
+ * Apply changes to the tree based on underlying changes in the filesystem
+ * @param changesets Array of changesets to apply
+ */
 function applyChangesets(changesets: FileChangeset[]) {
     store.update((s) => {
         // Pre-flight checks
@@ -112,23 +217,33 @@ function applyChangesets(changesets: FileChangeset[]) {
                         // Populate nested tree
                         let treeComponents = cs.key.slice(prefix.length).split('/').filter((c) => (c.length > 0));
 
-                        let n = s;  // Root node REF
-                        let p: NestedTree | undefined = undefined;
+                        let t: Tree = s;  // Root node REF
+                        let p: Tree | null = null;
+
+                        // Populate intermediate "folder" nodes
                         for (let i = 0; i < treeComponents.length; i++) {
-                            if (n.items === undefined) n.items = {};
+                            // If node is not a folder, exit (should never be called)
+                            if (t.data) return;
 
                             // Create parent 'backlink' reference
-                            if (p) n.parent = p;
+                            t.parent = p;
 
-                            // Populate child if missing
-                            if (n.items[treeComponents[i]] === undefined) n.items[treeComponents[i]] = {};
-                            p = n;  // by REF
-                            n = n.items[treeComponents[i]];  // by REF
+                            // Populate node if missing (initialise defaults)
+                            if (t.nodes[treeComponents[i]] === undefined)
+                                t.nodes[treeComponents[i]] = {
+                                    name: treeComponents[i],
+                                    parent: t,
+                                    ui: { expanded: false, include: false, ignore: false },
+                                    nodes: {}
+                                };
+
+                            p = t;  // Make current node the parent by REF
+                            t = t.nodes[treeComponents[i]];  // move down into the tree by REF
                         }
 
-                        // Populate final node data
-                        n.parent = p;
-                        n.data = {
+                        // Populate final node data (ensure NOT a folder node)
+                        t.nodes = undefined;
+                        t.data = {
                             dependencies: cs.includes ? cs.includes : [],
                         };
 
@@ -141,15 +256,15 @@ function applyChangesets(changesets: FileChangeset[]) {
 
                         let n = s;  // Root node REF
                         for (let i = 0; i < treeComponents.length - 1; i++) {
-                            if (n.items === undefined) return;   // Node doesn't exist
+                            if (n.nodes === undefined) return;   // Node doesn't exist
 
-                            n = n.items[treeComponents[i]];  // by REF
+                            n = n.nodes[treeComponents[i]];  // by REF
                             if (n === undefined) return; // Node doesn't exist
                         }
 
                         // Get last node and delete if present
-                        if (n.items === undefined) return;
-                        delete n.items[treeComponents[treeComponents.length - 1]];
+                        if (n.nodes === undefined) return;
+                        delete n.nodes[treeComponents[treeComponents.length - 1]];
 
                         break;
                     }
@@ -168,7 +283,9 @@ export default {
     update: store.update,
     init,
     reset,
-    flatten,
+    flattenKey,
+    unflattenKey,
+    handlePartialUpdate,
     resolve,
     applyChangesets,
 };

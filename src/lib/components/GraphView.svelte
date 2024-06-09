@@ -8,50 +8,28 @@
  *
 -->
 
-<script context="module" lang="ts">
-    /*--------------------------------- Types --------------------------------*/
-
-    interface Node extends SimulationNodeDatum {
-        id: string;
-        group: number;
-    }
-
-    interface Link extends SimulationLinkDatum<Node> {
-        source: string;
-        target: string;
-        value: number;
-    }
-
-    export { type Node, type Link };
-</script>
-
 <script lang="ts">
     /*-------------------------------- Imports -------------------------------*/
 
     import { onMount } from "svelte";
 
-    import type { SimulationNodeDatum, SimulationLinkDatum } from "d3-force";
+    import ForceGraph, { type ForceGraphInstance } from "force-graph";
+    import { forceCenter, forceX, forceY } from "d3-force";
 
-    import ForceGraph, {
-        type ForceGraphInstance,
-        type GraphData,
-        type LinkObject,
-        type NodeObject,
-    } from "force-graph";
+    import type { Graph } from "$lib/stores/graph";
 
     import { activeProject } from "$lib/stores/projects";
-    import { selectedNode } from "$lib/stores/tree";
+    import tree, { selectedNode } from "$lib/stores/tree";
 
     /*--------------------------------- Props --------------------------------*/
 
     let container: HTMLDivElement;
 
-    export let nodes: NodeObject[] = [];
-    export let links: LinkObject[] = [];
-
-    let data: GraphData = {
+    export let data: Graph = {
         nodes: [],
         links: [],
+        treeSet: new Set(),
+        treeMap: new Map(),
     };
 
     let graph: ForceGraphInstance;
@@ -71,39 +49,50 @@
         setTimeout(recenter, 200);
     });
 
+    // Recompute graph on data change
     $: {
-        data.nodes = [...nodes];
-        data.links = [...links];
         graph?.graphData(data);
+        graph?.d3ReheatSimulation();
     }
 
     onMount(() => {
         graph = ForceGraph();
         graph(container).graphData(data);
 
+        // Environment Forces
+        const fC = forceCenter().strength(0.5);
+        const fX = forceX().strength(0.05);
+        const fY = forceY().strength(0.05);
+
         // Root styling
         graph
             .linkColor(() => "rgba(255,255,255,0.2)")
             .linkWidth(() => 2)
-            .dagMode("td")
-            .dagLevelDistance(40)
+            // .dagMode("td")
+            // .dagLevelDistance(40)
+            // .onDagError(() => {})
             .linkDirectionalParticles(2)
             .linkDirectionalParticleSpeed(0.005)
             .linkDirectionalParticleWidth(3)
+            .d3Force("center", fC)
+            .d3Force("x", fX)
+            .d3Force("y", fY)
             .nodeLabel((n) => n.id as string)
             .nodeColor((n) => {
                 let id: string = n.id as string;
                 let isHeader = headerExtensions.some((h) => id.endsWith(h));
 
-                if ($selectedNode === n.id) return "#EDB120";
+                if ($selectedNode && tree.flattenKey($selectedNode) === n.id)
+                    return "#EDB120";
 
-                // TODO add group colour override
+                if (n.colour) return n.colour;
+
                 return isHeader ? "#0072BD" : "#D95319";
             });
 
         // Events
         graph.onNodeClick((n, e) => {
-            if (n.id) selectedNode.set(n.id as string);
+            if (n.id) selectedNode.set(tree.unflattenKey(n.id as string));
         });
     });
 </script>

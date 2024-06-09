@@ -80,7 +80,7 @@
                     // Close project if active
                     if ($activeProject === e.detail.key) $activeProject = null;
 
-                    // TODO prompt whether to keep the `cviz.config.yaml` file
+                    // TODO prompt whether to keep the `.cviz.yaml` file
                     projects.remove(e.detail.key);
                 }
             }}

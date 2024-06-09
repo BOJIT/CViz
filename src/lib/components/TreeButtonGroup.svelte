@@ -55,13 +55,13 @@
         class="toggle"
         on:click|stopPropagation={() => {
             include = !include;
-            dispatch("include", include);
+            dispatch("include");
         }}
     >
         {#if include}
-            <RadioButtonOn height="1rem" />
+            <RadioButtonOn height="20px" />
         {:else}
-            <RadioButtonOff height="1rem" />
+            <RadioButtonOff height="20px" />
         {/if}
     </button>
 
@@ -69,13 +69,13 @@
         class="toggle"
         on:click|stopPropagation={() => {
             ignore = !ignore;
-            dispatch("ignore", ignore);
+            dispatch("ignore");
         }}
     >
         {#if ignore}
-            <RemoveCircle height="1rem" />
+            <RemoveCircle height="20px" />
         {:else}
-            <CheckmarkCircle height="1rem" />
+            <CheckmarkCircle height="20px" />
         {/if}
     </button>
 
@@ -107,6 +107,7 @@
                         style:background-color={c !== "none" ? c : null}
                         on:click={() => {
                             colour = c;
+                            dispatch("colour");
                         }}
                     />
                 {/each}
@@ -134,17 +135,18 @@
 
     .palette {
         position: absolute;
-        top: 1rem;
-        left: 1rem;
-        width: 5.4rem;
+        top: -20px;
+        left: 30px;
+        height: 54px;
+        width: 102px;
 
-        border-radius: 0.7rem;
+        border-radius: 9px;
         background-color: var(--color-gray-700);
-        padding: 0.5rem;
+        padding: 6px;
 
         display: flex;
         flex-wrap: wrap;
-        gap: 0.4rem;
+        gap: 6px;
 
         z-index: 30;
     }
@@ -158,8 +160,8 @@
     }
 
     .col-circle {
-        height: 0.8rem;
-        width: 0.8rem;
+        height: 18px;
+        width: 18px;
         border-radius: 50%;
     }
 
