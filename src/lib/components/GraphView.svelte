@@ -14,6 +14,7 @@
     import { onMount } from "svelte";
 
     import ForceGraph, { type ForceGraphInstance } from "force-graph";
+    import { forceCenter, forceX, forceY } from "d3-force";
 
     import type { Graph } from "$lib/stores/graph";
 
@@ -58,6 +59,11 @@
         graph = ForceGraph();
         graph(container).graphData(data);
 
+        // Environment Forces
+        const fC = forceCenter().strength(0.5);
+        const fX = forceX().strength(0.05);
+        const fY = forceY().strength(0.05);
+
         // Root styling
         graph
             .linkColor(() => "rgba(255,255,255,0.2)")
@@ -68,6 +74,9 @@
             .linkDirectionalParticles(2)
             .linkDirectionalParticleSpeed(0.005)
             .linkDirectionalParticleWidth(3)
+            .d3Force("center", fC)
+            .d3Force("x", fX)
+            .d3Force("y", fY)
             .nodeLabel((n) => n.id as string)
             .nodeColor((n) => {
                 let id: string = n.id as string;
@@ -76,7 +85,8 @@
                 if ($selectedNode && tree.flattenKey($selectedNode) === n.id)
                     return "#EDB120";
 
-                // TODO add group colour override
+                if (n.colour) return n.colour;
+
                 return isHeader ? "#0072BD" : "#D95319";
             });
 

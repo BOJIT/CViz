@@ -28,6 +28,7 @@ interface Node extends SimulationNodeDatum {
     // Metadata properties
     node: Tree; // Reference to Tree node that Graph node decends from
     combine?: Tree; // If set, this node is rendered only as the combine node!
+    colour?: string;    // Computed colour override
 
     // Inherited properties (don't modify)
     fx?: number;
@@ -85,6 +86,19 @@ const store: Readable<Graph> = derived([config, tree], ([c, t], set, update) => 
         g.treeMap.forEach((n, t) => {
             if (t.nodes) return;
             if (t.parent === null) return;
+
+            // Walk up each node tree to find out the computed colour
+            let col: Tree = t;
+            n.colour = undefined;
+            while (1) {
+                if (col.ui.colour && col.ui.colour !== "none") {
+                    n.colour = col.ui.colour;
+                    break;
+                }
+
+                if (col.parent === null) break;
+                col = col.parent;
+            }
 
             // Resolve node dependencies
             t.data.dependencies?.forEach((inc) => {
