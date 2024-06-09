@@ -27,6 +27,8 @@
     export let data: Graph = {
         nodes: [],
         links: [],
+        treeSet: new Set(),
+        treeMap: new Map(),
     };
 
     let graph: ForceGraphInstance;
@@ -60,8 +62,8 @@
         graph
             .linkColor(() => "rgba(255,255,255,0.2)")
             .linkWidth(() => 2)
-            .dagMode("td")
-            .dagLevelDistance(40)
+            // .dagMode("td")
+            // .dagLevelDistance(40)
             // .onDagError(() => {})
             .linkDirectionalParticles(2)
             .linkDirectionalParticleSpeed(0.005)

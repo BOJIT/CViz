@@ -16,13 +16,18 @@ import type { SimulationNodeDatum, SimulationLinkDatum } from "d3-force";
 import type { GraphData } from "force-graph";
 
 import config from "$lib/stores/config";
-import tree, { includeRootNodes } from "$lib/stores/tree";
+import tree, { type Tree } from "$lib/stores/tree";
 
 /*--------------------------------- Types ------------------------------------*/
 
 interface Node extends SimulationNodeDatum {
-    id: string;
+    // Core properties
+    id: string; // This ID is the full path to the node
     group: number;
+
+    // Metadata properties
+    node: Tree; // Reference to Tree node that Graph node decends from
+    combine?: Tree; // If set, this node is rendered only as the combine node!
 
     // Inherited properties (don't modify)
     fx?: number;
@@ -38,6 +43,8 @@ interface Link extends SimulationLinkDatum<Node> {
 export interface Graph extends GraphData {
     nodes: Node[],
     links: Link[],
+    treeSet: Set<Tree>          // Cache of previous "Tree Nodes" in Graph
+    treeMap: Map<Tree, Node>,   // Incrementally updated "Tree Node Map"
 }
 
 /*--------------------------------- State ------------------------------------*/
@@ -45,58 +52,59 @@ export interface Graph extends GraphData {
 const DEFAULT_STORE: Graph = {
     nodes: [],
     links: [],
+    treeSet: new Set(),
+    treeMap: new Map(),
 };
 
 const store: Readable<Graph> = derived([config, tree], ([c, t], set, update) => {
     update((g) => {
-        // Create "flattened version" of tree where each node is a top-level key
-        let f = tree.flatten(t);
-        let newLinks: Link[] = [];
+        // Work out which nodes need to be added to the map and which
+        // nodes need to be added.
+        const activeNodes: Set<Tree> = new Set();
+        const includeNodes: Set<Tree> = new Set();
+        collectSets(t, activeNodes, includeNodes);
+        const toRemove: Set<Tree> = g.treeSet.difference(activeNodes);
+        const toAdd: Set<Tree> = activeNodes.difference(g.treeSet);
 
-        // TODO this should eventually just handle pattern matching
-        // Prune out all ignored nodes
-        Object.keys(f).forEach((k) => {
-            c.ignoreList?.forEach((i) => {
-                // Currently this only uses paths relative to the root
-                // TODO add regex support?
-                if (k in f && k.startsWith(i)) {
-                    delete f[k];
-                    return;
+        // Prune removed Tree Nodes
+        toRemove.forEach((r) => {
+            g.treeMap.delete(r);
+        });
+
+        // Key computation is only done for new Tree Nodes
+        toAdd.forEach((a) => {
+            g.treeMap.set(a, {
+                id: tree.flattenKey(a),
+                group: a.name.endsWith(".h") ? 2 : 1,
+                node: a,
+            });
+        });
+
+        // loop over active treemap and update links
+        let newLinks: Link[] = [];
+        g.treeMap.forEach((n, t) => {
+            if (t.nodes) return;
+            if (t.parent === null) return;
+
+            // Resolve node dependencies
+            t.data.dependencies?.forEach((inc) => {
+                const target = tree.resolve(inc, [t.parent, ...includeNodes]);
+                if (target === null) return;
+                const source = g.treeMap.get(target);
+                // Note that an ignored root may still resolve. We exclude it here
+                if (source) {
+                    let link: Link = { source: source.id, target: n.id, value: 5 };
+                    newLinks.push(link);
                 }
             });
         });
 
-        // Add new/updated nodes to graph
-        Object.entries(f).forEach((n) => {
-            let sourceNode: Node | undefined = undefined;
-            if (!g.nodes.some((s: Node) => s.id === n[0])) {
-                sourceNode = {
-                    id: n[0],
-                    group: n[0].endsWith(".h") ? 2 : 1,
-                };
-                g.nodes.push(sourceNode);
-            }
-
-            // Resolve dependencies
-            n[1].dependencies?.forEach((i) => {
-                let target = tree.resolve(
-                    i,
-                    f,
-                    n[0].slice(0, n[0].lastIndexOf("/")),
-                );
-
-                if (target === null) return; // TODO mark stdlib
-
-                let link = { source: target, target: n[0], value: 5 };
-                newLinks.push(link);
-            });
-        });
-
-        // Prune any nodes no longer present
-        g.nodes = g.nodes.filter((n) => n.id in f);
-
-        // Update to latest link copy
+        // Cast treemap to array of nodes and replace links
+        g.nodes = [...g.treeMap.values()];
         g.links = newLinks;
+
+        // Save active set for next computation
+        g.treeSet = activeNodes;
 
         return g;
     })
@@ -104,20 +112,30 @@ const store: Readable<Graph> = derived([config, tree], ([c, t], set, update) => 
 
 /*------------------------------- Functions ----------------------------------*/
 
-// Return a list of files that are included by the target file
-function getDependencies(id: string): string[] {
-    return [];
-}
+/**
+ * Generate node sets. This strips out any 'directory' nodes
+ * and ignored parts of the tree
+ * @param t Root tree node
+ * @param nodes set of nodes that is populated on return
+ * @returns
+ */
+function collectSets(t: Tree, nodes: Set<Tree>, includes: Set<Tree>): void {
+    if (t.ui.ignore) return;
 
-// Return a list of files that include the target file
-function getDependents(id: string): string[] {
-    return [];
+    if (t.ui.include) includes.add(t);
+
+    if (t.data) {
+        nodes.add(t);
+    } else {
+        Object.values(t.nodes).forEach((n) => {
+            collectSets(n, nodes, includes);
+        })
+    }
 }
 
 /*-------------------------------- Exports -----------------------------------*/
 
 export default {
     subscribe: store.subscribe,
-    getDependencies,
 };
 

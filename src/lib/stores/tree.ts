@@ -72,8 +72,6 @@ const store: Writable<Tree> = writable(structuredClone(DEFAULT_STORE));
 
 const selectedNode: Writable<Tree | null> = writable(null);
 
-const includeRootNodes: Set<Tree> = new Set();
-
 /*-------------------------------- Helpers -----------------------------------*/
 
 /**
@@ -82,14 +80,14 @@ const includeRootNodes: Set<Tree> = new Set();
  * @param func function to execute
  * @returns void
  */
-function treeWalk(t: Tree, func: (n: Tree) => void): void {
-    func(t);    // Perform passed function
+// function treeWalk(t: Tree, func: (n: Tree) => void): void {
+//     func(t);    // Perform passed function
 
-    if (!t.nodes) return;
-    Object.entries(t.nodes).forEach((n) => {
-        treeWalk(n[1], func);
-    })
-}
+//     if (!t.nodes) return;
+//     Object.values(t.nodes).forEach((n) => {
+//         treeWalk(n, func);
+//     })
+// }
 
 /*------------------------------- Functions ----------------------------------*/
 
@@ -98,15 +96,6 @@ function treeWalk(t: Tree, func: (n: Tree) => void): void {
  * @returns Instance of the store (async)
  */
 async function init(): Promise<Writable<Tree>> {
-
-    // Assignments to the store always trigger a full recompute of derived state.
-    // Store updates should be considered an expensive operation
-    // store.subscribe((t) => {
-    //     includeRootNodes.clear();
-    //     treeWalk(t, (n: Tree) => {
-    //         if (n.ui.include) includeRootNodes.add(n);
-    //     });
-    // });
     return store;
 }
 
@@ -116,29 +105,6 @@ async function init(): Promise<Writable<Tree>> {
 function reset(): void {
     selectedNode.set(null);
     store.set(structuredClone(DEFAULT_STORE));
-}
-
-/**
- * @param t Top level tree component (when not calling recursively)
- * @param parent parent node string
- * @param res Result of previous recursion
- * @returns a flattened tree
- *
- * @note by default children of ignored nodes are not parsed
- */
-function flatten(t: Tree, parent?: string, res: FlattenedTree = {}): FlattenedTree {
-    if (t.data || t.ui.ignore) return res;
-
-    Object.entries(t.nodes).forEach((n) => {
-        let name = parent ? parent + '/' + n[0] : n[0];
-        if (n[1].nodes) {
-            flatten(n[1], name, res);
-        } else {
-            res[name] = n[1].data;
-        }
-    })
-
-    return res;
 }
 
 /**
@@ -180,16 +146,13 @@ function unflattenKey(k: string): Tree | null {
  * @param u Tree Update Event
  */
 function handlePartialUpdate(u: TreeUpdate): void {
-    console.log(u);
     switch (u.event) {
         case "expansion":
             // No update action needs to be taken
             break;
 
         case "include":
-            // Check if node should be in include root list
-            if (u.tree.ui.include) includeRootNodes.add(u.tree);
-            else includeRootNodes.delete(u.tree);
+            // TEMP: trigger an update
             store.update(s => s);
             break;
 
@@ -210,28 +173,24 @@ function handlePartialUpdate(u: TreeUpdate): void {
 
 /**
  * @param path path of include in C/C++ file
+ * @param roots list of tree nodes to try searching from
  * @returns a flattened path to a tree node (if found by the resolver)
  * or null on failure to find.
  */
-function resolve(path: string, tree: FlattenedTree, currentPath?: string): string | null {
-    // Try relative to current path
-    if (`${currentPath}/${path}` in tree)
-        return `${currentPath}/${path}`;
+function resolve(path: string, roots: Tree[] = []): Tree | null {
+    const components = path.split("/");
 
-    // TODO This is messy. Fix later
-    const searchPaths: string[] = [];
-    includeRootNodes.forEach((s) => {
-        searchPaths.push(flattenKey(s));
-    })
-
-    // Try the include roots (in alphabetical order)
-    let matches = searchPaths?.map((p) => p.replace(/\/$/, ""))
-        .filter((p) => (`${p}/${path}` in tree)).map((p) => `${p}/${path}`);
-    if (matches?.length) return matches[0];
-
-    // Try from the root
-    if (path in tree)
-        return path;
+    // Note this will return the first match in order of roots passed in.
+    for (const r of roots) {
+        let n: Tree = r;
+        for (const c of components) {
+            if (!n.nodes) break;
+            if (!n.nodes[c]) break;
+            n = n.nodes[c];
+        }
+        // If after iteration, we're on a file node, return as resolved
+        if (n.data) return n;
+    }
 
     return null;
 }
@@ -269,7 +228,7 @@ function applyChangesets(changesets: FileChangeset[]) {
                             // Create parent 'backlink' reference
                             t.parent = p;
 
-                            // Populate child if missing (initialise defaults)
+                            // Populate node if missing (initialise defaults)
                             if (t.nodes[treeComponents[i]] === undefined)
                                 t.nodes[treeComponents[i]] = {
                                     name: treeComponents[i],
@@ -324,7 +283,6 @@ export default {
     update: store.update,
     init,
     reset,
-    flatten,
     flattenKey,
     unflattenKey,
     handlePartialUpdate,
@@ -332,4 +290,4 @@ export default {
     applyChangesets,
 };
 
-export { selectedNode, includeRootNodes };
+export { selectedNode };

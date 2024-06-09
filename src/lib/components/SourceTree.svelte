@@ -13,7 +13,7 @@
 
     import TreeView from "$lib/components/TreeView.svelte";
 
-    import tree, { includeRootNodes, selectedNode } from "$lib/stores/tree";
+    import tree, { selectedNode } from "$lib/stores/tree";
 
     import project, { activeProject } from "$lib/stores/projects";
 
