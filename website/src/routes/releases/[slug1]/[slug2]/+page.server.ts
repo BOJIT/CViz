@@ -22,5 +22,5 @@ export const prerender = false;
 
 // Redirect this route to GitHub releases
 export function load({ params }) {
-    throw redirect(301, `https://github.com/BOJIT/CViz/releases/${params.slug}`);
+    throw redirect(301, `https://github.com/BOJIT/CViz/releases/${params.slug1}/${params.slug2}`);
 }
