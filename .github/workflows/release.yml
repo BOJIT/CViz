@@ -14,7 +14,15 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        platform: [macos-latest, ubuntu-20.04, windows-latest]
+        include:
+          - platform: "macos-latest" # for Arm based macs (M1 and above).
+            args: "--target aarch64-apple-darwin"
+          - platform: "macos-latest" # for Intel based macs.
+            args: "--target x86_64-apple-darwin"
+          - platform: "ubuntu-22.04"
+            args: ""
+          - platform: "windows-latest"
+            args: ""
 
     runs-on: ${{ matrix.platform }}
     steps:
@@ -25,19 +33,19 @@ jobs:
 
       - name: get proposed tag
         id: get_version
-        uses: notiz-dev/github-action-json-property@v0.2.0
+        uses: notiz-dev/github-action-json-property@release
         with:
             path: 'src-tauri/tauri.conf.json'
             prop_path: 'package.version'
 
-      - uses: mukunku/tag-exists-action@v1.5.0
+      - uses: mukunku/tag-exists-action@v1.6.0
         id: check-tag
         with:
           tag: ${{steps.get_version.outputs.prop}}
 
       # Only fail the duplicate tag on one platform
       - run: echo "Tag exists!" && exit 1
-        if: ${{ matrix.platform == 'ubuntu-20.04' && steps.check-tag.outputs.exists == 'true' }}
+        if: ${{ matrix.platform == 'ubuntu-22.04' && steps.check-tag.outputs.exists == 'true' }}
 
       - name: setup node
         uses: actions/setup-node@v4
@@ -48,13 +56,13 @@ jobs:
         uses: dtolnay/rust-toolchain@stable
 
       - name: install dependencies (ubuntu only)
-        if: matrix.platform == 'ubuntu-20.04'
+        if: matrix.platform == 'ubuntu-22.04'
         run: |
           sudo apt-get update
           sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.0-dev libappindicator3-dev librsvg2-dev patchelf
 
       - name: install frontend dependencies
-        run: yarn install # change this to npm or pnpm depending on which one you use
+        run: npm install
 
       - uses: tauri-apps/tauri-action@v0
         env:
@@ -64,11 +72,14 @@ jobs:
           tagName: cviz-v__VERSION__ # the action automatically replaces \_\_VERSION\_\_ with the app version
           releaseName: "CViz v__VERSION__"
           releaseBody: "See the assets to download this version and install"
+          releaseDraft: true
+          prerelease: false
+          args: ${{ matrix.args }}
 
       # Only push the tag once
       - name: Push proposed tag to main commit
         uses: anothrNick/github-tag-action@1.64.0
-        if: matrix.platform == 'ubuntu-20.04'
+        if: matrix.platform == 'ubuntu-22.04'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           CUSTOM_TAG: ${{steps.get_version.outputs.prop}}
