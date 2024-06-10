@@ -1,17 +1,21 @@
 {
-    "$schema": "../node_modules/@tauri-apps/cli/schema.json",
     "build": {
-        "beforeBuildCommand": "npm run build",
         "beforeDevCommand": "npm run dev",
-        "devPath": "http://localhost:5173",
+        "beforeBuildCommand": "npm run build",
+        "devPath": "http://localhost:1420",
         "distDir": "../build"
     },
     "package": {
         "productName": "CViz",
-        "version": "0.2.0"
+        "version": "0.2.1"
     },
     "tauri": {
         "allowlist": {
+            "all": false,
+            "shell": {
+                "all": false,
+                "open": true
+            },
             "dialog": {
                 "all": false,
                 "ask": false,
@@ -21,14 +25,30 @@
                 "save": false
             }
         },
+        "windows": [
+            {
+                "title": "CViz",
+                "fullscreen": false,
+                "resizable": true,
+                "maximized": true
+            }
+        ],
+        "security": {
+            "csp": null
+        },
+        "updater": {
+            "active": true,
+            "endpoints": [
+                "https://cviz.bojit.org/releases/latest/download/latest.json"
+            ],
+            "dialog": true,
+            "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEM0NDQ5MTQ5NzQyNDUyMjAKUldRZ1VpUjBTWkZFeE0xRGlBMnpNRGl2SkJTbjVIS3BwaUNRS1dLbnAvQ3hwNit5ZGVGaXNKQ1YK"
+        },
         "bundle": {
             "active": true,
             "category": "DeveloperTool",
-            "copyright": "",
-            "deb": {
-                "depends": []
-            },
-            "externalBin": [],
+            "targets": "all",
+            "identifier": "org.bojit.cviz",
             "icon": [
                 "icons/128x128@2x.png",
                 "icons/128x128.png",
@@ -46,43 +66,7 @@
                 "icons/Square71x71Logo.png",
                 "icons/Square89x89Logo.png",
                 "icons/StoreLogo.png"
-            ],
-            "identifier": "org.bojit.cviz",
-            "longDescription": "",
-            "macOS": {
-                "entitlements": null,
-                "exceptionDomain": "",
-                "frameworks": [],
-                "providerShortName": null,
-                "signingIdentity": null
-            },
-            "resources": [],
-            "shortDescription": "",
-            "targets": "all",
-            "windows": {
-                "certificateThumbprint": null,
-                "digestAlgorithm": "sha256",
-                "timestampUrl": ""
-            }
-        },
-        "security": {
-            "csp": null
-        },
-        "updater": {
-            "active": true,
-            "endpoints": [
-                "https://cviz.bojit.org/releases/latest/download/latest.json"
-            ],
-            "dialog": true,
-            "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEM0NDQ5MTQ5NzQyNDUyMjAKUldRZ1VpUjBTWkZFeE0xRGlBMnpNRGl2SkJTbjVIS3BwaUNRS1dLbnAvQ3hwNit5ZGVGaXNKQ1YK"
-        },
-        "windows": [
-            {
-                "fullscreen": false,
-                "resizable": true,
-                "maximized": true,
-                "title": "CViz"
-            }
-        ]
+            ]
+        }
     }
 }
