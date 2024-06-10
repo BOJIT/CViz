@@ -82,7 +82,7 @@ pub mod utils {
             }
 
             Err(_) => {
-                println!("Could not open: {}", path);
+                // println!("Could not open: {}", path);
                 return None;
             }
         };

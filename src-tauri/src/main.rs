@@ -57,7 +57,7 @@ fn pick_directory() -> String {
         None => return String::from(""),
     };
 
-    println!("PATH: {:?}", path);
+    // println!("PATH: {:?}", path);
 
     path
 }
@@ -228,7 +228,7 @@ fn write_config_file(app_handle: tauri::AppHandle, root: &str, config: ipc::Conf
     match res {
         Ok(_) => (),
         Err(_e) => {
-            println!("ERR: {:?}", _e);
+            // println!("ERR: {:?}", _e);
             // Notify write failure
             show_webview_dialog(
                 &app_handle,
