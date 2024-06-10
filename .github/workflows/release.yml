@@ -50,10 +50,13 @@ jobs:
       - name: setup node
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: lts/*
 
       - name: install Rust stable
         uses: dtolnay/rust-toolchain@stable
+        with:
+          # Those targets are only used on macos runners so it's in an `if` to slightly speed up windows and linux builds.
+          targets: ${{ matrix.platform == 'macos-latest' && 'aarch64-apple-darwin,x86_64-apple-darwin' || '' }}
 
       - name: install dependencies (ubuntu only)
         if: matrix.platform == 'ubuntu-22.04'
@@ -72,7 +75,6 @@ jobs:
           tagName: cviz-v__VERSION__ # the action automatically replaces \_\_VERSION\_\_ with the app version
           releaseName: "CViz v__VERSION__"
           releaseBody: "See the assets to download this version and install"
-          releaseDraft: true
           prerelease: false
           args: ${{ matrix.args }}
 
