@@ -14,10 +14,12 @@ import { get, writable, type Writable } from "svelte/store";
 
 import localForage from "localforage";
 
+import { message } from "@bojit/svelte-components/core";
+
 import tree, { selectedNode } from '$lib/stores/tree';
 import configTree from "$lib/stores/config";
 import { initialiseTreeWatcher, readConfigFile, writeConfigFile } from "$lib/utils/commands";
-import { loadingOverlay } from "$lib/stores/overlays";
+import { loadingOverlay, projectOverlay } from "$lib/stores/overlays";
 
 /*--------------------------------- Types ------------------------------------*/
 
@@ -68,8 +70,21 @@ async function init(): Promise<Writable<ProjectStore>> {
         tree.reset();
 
         // Read new config file and load new project
-        configTree.set(await readConfigFile(val));
-        await initialiseTreeWatcher(val);
+        try {
+            configTree.set(await readConfigFile(val));
+            await initialiseTreeWatcher(val);
+        } catch (error) {
+            // Return to selector if the directory doesn't exist!
+            message.push({
+                "title": "Directory doesn't exist!",
+                "message": "Project no longer exists on disk.",
+                "type": "error",
+                "timeout": 10,
+            });
+
+            activeProject.set(null);
+            projectOverlay.set(true);
+        }
 
         loadingOverlay.set(false);
     });

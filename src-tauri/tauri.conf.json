@@ -39,7 +39,7 @@
         "updater": {
             "active": true,
             "endpoints": [
-                "https://cviz.bojit.org/releases/latest/download/latest.json"
+                "https://github.com/BOJIT/CViz/releases/latest/download/latest.json"
             ],
             "dialog": true,
             "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEM0NDQ5MTQ5NzQyNDUyMjAKUldRZ1VpUjBTWkZFeE0xRGlBMnpNRGl2SkJTbjVIS3BwaUNRS1dLbnAvQ3hwNit5ZGVGaXNKQ1YK"

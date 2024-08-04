@@ -44,22 +44,17 @@ fn create_default_config(mut f: &std::fs::File) -> Result<ipc::ConfigTree, std::
 /* ------------------------------- Tauri Commands --------------------------- */
 
 #[tauri::command]
-fn pick_directory() -> String {
+fn pick_directory() -> Result<String, ()> {
     // NOTE dialog launchers MUST run in the main thread (for MacOS compatibility)
-
     let path = FileDialog::new()
         .reset_location()
         .show_open_single_dir()
         .unwrap();
 
-    let path = match path {
-        Some(path) => parse_file::utils::to_unix(&path),
-        None => return String::from(""),
-    };
-
-    // println!("PATH: {:?}", path);
-
-    path
+    match path {
+        Some(path) => Result::Ok(parse_file::utils::to_unix(&path)),
+        None => Result::Err(()),
+    }
 }
 
 #[tauri::command]
@@ -72,7 +67,10 @@ async fn initialise_tree_watcher(
     let path = parse_file::utils::from_unix(root);
     let root = path.to_str().unwrap();
 
-    // TODO handle glob ignore patterns
+    // Check directory exists
+    if !path.exists() {
+        return Result::Err(());
+    }
 
     // Fetch changesets initially for all C/C++ files
     let files = parse_file::utils::match_files(
@@ -148,11 +146,34 @@ async fn initialise_tree_watcher(
 }
 
 #[tauri::command]
-fn read_config_file(app_handle: tauri::AppHandle, root: &str) -> ipc::ConfigTree {
+fn read_config_file(app_handle: tauri::AppHandle, root: &str) -> Result<ipc::ConfigTree, ()> {
+    // Check if root path sill exists
+    if !parse_file::utils::from_unix(root).exists() {
+        return Result::Err(());
+    }
+
     let path_str = format!("{root}/.cviz.yaml");
     let path = parse_file::utils::from_unix(&path_str);
     let path = std::path::Path::new(&path);
 
+    // Notify UI if new CViz YAML file is created
+    if !path.exists() {
+        // Create blank config file if doesn't exist
+        let h = std::fs::File::create(path).unwrap();
+        create_default_config(&h).unwrap();
+
+        // Notify creation of config file
+        show_webview_dialog(
+            &app_handle,
+            &ipc::UINotification::Info(ipc::UINotificationMetdata {
+                title: "Added .cviz.yaml".to_string(),
+                message: "Config file added to project root".to_string(),
+                timeout: Some(5),
+            }),
+        );
+    }
+
+    // Try to open the CViz config file
     let f = std::fs::File::open(path);
     let f = match f {
         Ok(f) => f,
@@ -160,23 +181,11 @@ fn read_config_file(app_handle: tauri::AppHandle, root: &str) -> ipc::ConfigTree
             // Create blank config file if doesn't exist
             let h = std::fs::File::create(path).unwrap();
             create_default_config(&h).unwrap();
-
-            // TODO re-open the file in read-write mode
-
-            // Notify creation of config file
-            show_webview_dialog(
-                &app_handle,
-                &ipc::UINotification::Info(ipc::UINotificationMetdata {
-                    title: "Added .cviz.yaml".to_string(),
-                    message: "Config file added to project root".to_string(),
-                    timeout: Some(5),
-                }),
-            );
-
             h
         }
     };
 
+    // Load configuration settings
     let data: ipc::ConfigTree = match serde_yaml::from_reader(f) {
         Ok(d) => d,
         Err(_e) => {
@@ -196,11 +205,20 @@ fn read_config_file(app_handle: tauri::AppHandle, root: &str) -> ipc::ConfigTree
         }
     };
 
-    return data;
+    return Result::Ok(data);
 }
 
 #[tauri::command]
-fn write_config_file(app_handle: tauri::AppHandle, root: &str, config: ipc::ConfigTree) {
+fn write_config_file(
+    app_handle: tauri::AppHandle,
+    root: &str,
+    config: ipc::ConfigTree,
+) -> Result<(), ()> {
+    // Check if root path sill exists
+    if !parse_file::utils::from_unix(root).exists() {
+        return Result::Err(());
+    }
+
     let path_str = format!("{root}/.cviz.yaml");
     let path = parse_file::utils::from_unix(&path_str);
 
@@ -218,7 +236,7 @@ fn write_config_file(app_handle: tauri::AppHandle, root: &str, config: ipc::Conf
                 }),
             );
 
-            return;
+            return Result::Err(());
         }
     };
 
@@ -226,9 +244,8 @@ fn write_config_file(app_handle: tauri::AppHandle, root: &str, config: ipc::Conf
     let yaml = serde_yaml::to_string(&config).unwrap();
     let res = f.write_all(yaml.as_bytes());
     match res {
-        Ok(_) => (),
+        Ok(_) => Result::Ok(()),
         Err(_e) => {
-            // println!("ERR: {:?}", _e);
             // Notify write failure
             show_webview_dialog(
                 &app_handle,
@@ -238,8 +255,10 @@ fn write_config_file(app_handle: tauri::AppHandle, root: &str, config: ipc::Conf
                     timeout: None,
                 }),
             );
+
+            return Result::Err(());
         }
-    };
+    }
 }
 
 /* -------------------------------- Tauri Events ---------------------------- */

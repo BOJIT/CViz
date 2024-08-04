@@ -96,9 +96,21 @@
             outlined
             color={$theme === "dark" ? "white" : "primary"}
             on:click={async () => {
-                const dir = await pickDirectory();
+                try {
+                    const dir = await pickDirectory();
 
-                if (dir === "") {
+                    // Add directory and set active project on success
+                    if (projects.add(dir) === true) {
+                        message.push({
+                            type: "warning",
+                            title: "Duplicate Project",
+                            message: "This project already exists",
+                        });
+                    }
+
+                    $activeProject = dir;
+                    visible = false;
+                } catch (error) {
                     message.push({
                         type: "error",
                         title: "Invalid Project",
@@ -106,18 +118,6 @@
                     });
                     return;
                 }
-
-                // Add directory and set active project on success
-                if (projects.add(dir) === true) {
-                    message.push({
-                        type: "warning",
-                        title: "Duplicate Project",
-                        message: "This project already exists",
-                    });
-                }
-
-                $activeProject = dir;
-                visible = false;
             }}
         />
     </div>
