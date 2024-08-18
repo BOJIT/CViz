@@ -10,36 +10,37 @@
 
 /*-------------------------------- Imports -----------------------------------*/
 
-import { writable, type Writable } from "svelte/store";
+import { derived, type Readable } from "svelte/store";
 
 import type { ConfigTree } from "$lib/ipc";
 
+import tree from "$lib/stores/tree";
+
 /*--------------------------------- State ------------------------------------*/
 
-const VERSION = 1; // TODO link to releases?
+const DEFAULT_STORE: ConfigTree = {
+    syntax: 1,
+}
 
-const store: Writable<ConfigTree> = writable({
-    syntax: VERSION,
-});
+const store: Readable<ConfigTree> = derived(tree, (t, set, update) => {
+    update((c) => {
+        // Walk nodes and write back changes that are non-default
+
+        if (!c.nodeConfig) c.nodeConfig = {};
+
+        c.nodeConfig["test"] = {
+            include: true,
+        };
+
+        return c;
+    })
+}, structuredClone(DEFAULT_STORE));
 
 /*------------------------------- Functions ----------------------------------*/
 
-async function init(): Promise<Writable<ConfigTree>> {
-    return store;
-}
-
-function reset(): void {
-    store.set({
-        syntax: VERSION,
-    });
-}
 
 /*-------------------------------- Exports -----------------------------------*/
 
 export default {
-    set: store.set,
     subscribe: store.subscribe,
-    update: store.update,
-    init,
-    reset,
 };

@@ -34,7 +34,6 @@
         Warning,
     } from "@svicons/ionicons-outline";
 
-    import config from "$lib/stores/config";
     import settings from "$lib/stores/settings";
 
     import Logo from "$lib/assets/img/BOJIT_Square.png";
@@ -136,7 +135,7 @@
             <hr />
 
             <div class="long-page">
-                <!-- Project Include Roots -->
+                <!-- Project Include Roots
                 <br />
                 <code>Include Paths</code>
                 <hr />
@@ -149,9 +148,9 @@
                             return c;
                         });
                     }}
-                />
+                /> -->
 
-                <!-- Project Include Roots -->
+                <!-- Project Include Roots
                 <br />
                 <code>Ignore List</code>
                 <hr />
@@ -164,7 +163,7 @@
                             return c;
                         });
                     }}
-                />
+                /> -->
 
                 <!-- Project Groups-->
                 <br />

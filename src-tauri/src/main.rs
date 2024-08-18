@@ -31,8 +31,7 @@ fn create_default_config(mut f: &std::fs::File) -> Result<ipc::ConfigTree, std::
     // Write back syntax tag (bare file)
     let config: ipc::ConfigTree = ipc::ConfigTree {
         syntax: 1,
-        include_roots: None,
-        ignore_list: None,
+        node_config: None,
     };
 
     let yaml = serde_yaml::to_string(&config).unwrap();

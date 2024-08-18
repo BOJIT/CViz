@@ -1,7 +1,7 @@
 /**
  * @file projects.ts
  * @author James Bennion-Pedley
- * @brief Store of accessible project handles (Filesystem Access API)
+ * @brief Store of saved projects (stored in Browser storage)
  * @date 07/02/2023
  *
  * @copyright Copyright (c) 2023
@@ -17,7 +17,7 @@ import localForage from "localforage";
 import { message } from "@bojit/svelte-components/core";
 
 import tree, { selectedNode } from '$lib/stores/tree';
-import configTree from "$lib/stores/config";
+import config from "$lib/stores/config";
 import { initialiseTreeWatcher, readConfigFile, writeConfigFile } from "$lib/utils/commands";
 import { loadingOverlay, projectOverlay } from "$lib/stores/overlays";
 
@@ -71,7 +71,11 @@ async function init(): Promise<Writable<ProjectStore>> {
 
         // Read new config file and load new project
         try {
-            configTree.set(await readConfigFile(val));
+            const configData = await readConfigFile(val);
+            console.log(configData);
+
+            // TODO update the tree information based on active project
+
             await initialiseTreeWatcher(val);
         } catch (error) {
             // Return to selector if the directory doesn't exist!
@@ -90,12 +94,9 @@ async function init(): Promise<Writable<ProjectStore>> {
     });
 
     // Project config files are written back to disk on changes.
-    configTree.subscribe(async (c) => {
+    config.subscribe(async (c) => {
         let p = get(activeProject);
         if (p === null) return;
-
-        // Config changes should trigger a re-resolve
-        tree.update((t) => t);
 
         // Note this will result in one redundant write-back on project changes
         await writeConfigFile(p, c);

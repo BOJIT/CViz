@@ -29,10 +29,6 @@ type NodeData = {
     dependencies: string[],
 };
 
-type FlattenedTree = {
-    [key: string]: NodeData,
-};
-
 type TreeProps = {
     name: string,   // filename
     parent: Tree | null, // Null means we are the top of the tree

@@ -15,7 +15,6 @@ import { derived, type Readable } from "svelte/store";
 import type { SimulationNodeDatum, SimulationLinkDatum } from "d3-force";
 import type { GraphData } from "force-graph";
 
-import config from "$lib/stores/config";
 import tree, { type Tree } from "$lib/stores/tree";
 
 /*--------------------------------- Types ------------------------------------*/
@@ -57,7 +56,7 @@ const DEFAULT_STORE: Graph = {
     treeMap: new Map(),
 };
 
-const store: Readable<Graph> = derived([config, tree], ([c, t], set, update) => {
+const store: Readable<Graph> = derived(tree, (t, set, update) => {
     update((g) => {
         // Work out which nodes need to be added to the map and which
         // nodes need to be added.

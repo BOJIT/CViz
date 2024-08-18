@@ -79,8 +79,6 @@
                 if (e.detail.index === 0) {
                     // Close project if active
                     if ($activeProject === e.detail.key) $activeProject = null;
-
-                    // TODO prompt whether to keep the `.cviz.yaml` file
                     projects.remove(e.detail.key);
                 }
             }}
@@ -89,7 +87,6 @@
 
     <br />
     <div style="padding-left: 0.3rem">
-        <!-- TODO fix theming -->
         <TextIconButton
             icon={FolderOpen}
             label="Add from Filesystem"

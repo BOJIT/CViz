@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 /**
  * @note Keep in sync with `ipc.d.ts`
  */
@@ -38,9 +40,16 @@ pub enum FileChangeset {
 
 #[serde_with::skip_serializing_none]
 #[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
+pub struct NodeConfig {
+    pub include: Option<bool>,
+    pub ignore: Option<bool>,
+    pub colour: Option<bool>,
+}
+
+#[serde_with::skip_serializing_none]
+#[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ConfigTree {
     pub syntax: u32,
-    pub include_roots: Option<Vec<String>>,
-    pub ignore_list: Option<Vec<String>>,
+    pub node_config: Option<HashMap<String, NodeConfig>>,
 }

@@ -33,11 +33,17 @@ type Group = {
     path: string,
 };
 
+type NodeConfig = {
+    include?: boolean,  // Default = false
+    ignore?: boolean,   // Default = false
+    colour?: string,    // Default = null
+};
+
 export type ConfigTree = {
     syntax: number,
-    includeRoots?: string[],
-    ignoreList?: string[],
-    // groups?: Group[]
+    nodeConfig?: {
+        [key: string]: NodeConfig,
+    },
 };
 
 /*-------------------------------- Exports -----------------------------------*/
