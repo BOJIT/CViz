@@ -1,67 +1,97 @@
 <!--
  * @file +layout.svelte
  * @author James Bennion-Pedley
- * @brief Root Layout
- * @date 07/02/2023
+ * @brief Example top-level layout
+ * @date 27/12/2024
  *
- * @copyright Copyright (c) 2023
+ * @copyright Copyright (c) 2024
  *
 -->
 
 <script lang="ts">
     /*-------------------------------- Imports -------------------------------*/
 
-    import { onMount } from "svelte";
+    import { App, UI } from '@bojit/svelte-components';
+    import { type Icon } from '@bojit/svelte-components/icons';
 
-    import "@fontsource/jetbrains-mono";
+    import PaintBrush from 'carbon-icons-svelte/lib/PaintBrush.svelte';
+    import LogoGithub from 'carbon-icons-svelte/lib/LogoGithub.svelte';
+    import FolderIcon from 'carbon-icons-svelte/lib/Folder.svelte';
+    import SettingsIcon from 'carbon-icons-svelte/lib/Settings.svelte';
+    import RestartIcon from 'carbon-icons-svelte/lib/Restart.svelte';
 
-    import { App, Notification } from "@bojit/svelte-components/core";
-    import { mode as themeMode } from "@bojit/svelte-components/theme";
-    import { ThemeSelector } from "@bojit/svelte-components/widgets";
+    import logo from '$lib/assets/Logo.png';
 
-    import { themeOverlay } from "$lib/stores/overlays";
-    import settings from "$lib/stores/settings";
-    import projects from "$lib/stores/projects";
-    import tree from "$lib/stores/tree";
-
-    import events from "$lib/utils/events";
-
-    import palette from "$lib/palette";
+    import '../app.css';
 
     /*--------------------------------- Props --------------------------------*/
 
+    let { children } = $props();
+
+    let app: App;
+
     /*-------------------------------- Methods -------------------------------*/
 
-    /* Check browser is supported */
-    async function loadCheck(resolve, reject) {
-        // If in development deployment, bypass checks
-        if (import.meta.env.VITE_BROWSER_CHECK === "false") resolve();
-
-        resolve(); // Note: browser checks not required for Tauri build
-    }
-
     /*------------------------------- Lifecycle ------------------------------*/
-
-    onMount(async () => {
-        // Set up listeners for Tauri events
-        await events.init();
-
-        // Initialise local storage databases
-        await tree.init();
-        await settings.init();
-        await projects.init();
-
-        // Update settings store when theme changes
-        $themeMode = $settings.theme;
-        themeMode.subscribe((t) => {
-            $settings.theme = t;
-        });
-    });
 </script>
 
-<App theme={palette} load={loadCheck}>
-    <slot />
-</App>
+<svelte:head><title>CViz</title></svelte:head>
 
-<ThemeSelector bind:active={$themeOverlay} />
-<Notification />
+<App defaultMode="system" bind:this={app}>
+    <UI.NavBar
+        title="CViz"
+        {logo}
+        logoLink="https://github.com/BOJIT/CViz"
+        themeOverride="dark"
+        items={[
+            {
+                type: 'button',
+                icon: RestartIcon as Icon,
+                label: 'Refresh',
+                visibility: 'desktop',
+                onclick: () => {
+                    app.launchThemeSelector();
+                }
+            },
+            {
+                type: 'button',
+                icon: FolderIcon as Icon,
+                label: 'Open Project',
+                visibility: 'desktop',
+                onclick: () => {
+                    app.launchThemeSelector();
+                }
+            },
+            {
+                type: 'separator',
+                visibility: 'desktop'
+            },
+            {
+                type: 'button',
+                icon: LogoGithub as Icon,
+                label: 'Source Code',
+                link: 'https://github.com/BOJIT/CViz',
+                visibility: 'desktop'
+            },
+            {
+                type: 'button',
+                icon: PaintBrush as Icon,
+                label: 'Set Theme',
+                visibility: 'desktop',
+                onclick: () => {
+                    app.launchThemeSelector();
+                }
+            },
+            {
+                type: 'button',
+                icon: SettingsIcon as Icon,
+                label: 'Settings',
+                visibility: 'desktop',
+                onclick: () => {
+                    app.launchThemeSelector();
+                }
+            }
+        ]}
+    />
+    {@render children()}
+</App>

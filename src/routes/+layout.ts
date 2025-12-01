@@ -1,20 +1,6 @@
-/**
- * @file +layout.ts
- * @author James Bennion-Pedley
- * @brief Top level render strategy
- * @date 10/02/2023
- *
- * @copyright Copyright (c) 2023
- *
- */
-
-/*-------------------------------- Imports -----------------------------------*/
-
-/*--------------------------------- State ------------------------------------*/
-
-/*------------------------------- Functions ----------------------------------*/
-
-/*-------------------------------- Exports -----------------------------------*/
-
+// Tauri doesn't have a Node.js server to do proper SSR
+// so we use adapter-static with a fallback to index.html to put the site in SPA mode
+// See: https://svelte.dev/docs/kit/single-page-apps
+// See: https://v2.tauri.app/start/frontend/sveltekit/ for more info
+// export const ssr = false;
 export const prerender = true;
-export const ssr = false;

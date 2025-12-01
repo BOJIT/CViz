@@ -1,139 +1,88 @@
 <!--
  * @file +page.svelte
  * @author James Bennion-Pedley
- * @brief Main UI
- * @date 07/02/2023
+ * @brief Main application layout
+ * @date 14/09/2025
  *
- * @copyright Copyright (c) 2023
+ * @copyright Copyright (c) 2025
  *
 -->
 
 <script lang="ts">
     /*-------------------------------- Imports -------------------------------*/
 
-    import { onMount } from "svelte";
+    import { UI } from '@bojit/svelte-components';
 
-    import { NavBar, type NavItem } from "@bojit/svelte-components/layout";
-    import { ProgressLinear } from "@bojit/svelte-components/smelte";
+    import { invoke } from '@tauri-apps/api/core';
 
-    import { FolderOpen, Settings } from "@svicons/ionicons-outline";
-
-    import logo from "$lib/assets/img/Logo.png";
-    import GraphOverlay from "$lib/components/GraphOverlay.svelte";
-    import GraphView from "$lib/components/GraphView.svelte";
-    import KeyBindings from "$lib/components/KeyBindings.svelte";
-    import ProjectDialog from "$lib/components/dialogs/ProjectDialog.svelte";
-    import SettingsDialog from "$lib/components/dialogs/SettingsDialog.svelte";
-    import StatusBar from "$lib/components/StatusBar.svelte";
-
-    // Stores
-    import graph from "$lib/stores/graph";
-    import {
-        loadingOverlay,
-        projectOverlay,
-        settingsOverlay,
-    } from "$lib/stores/overlays";
-    import { activeProject } from "$lib/stores/projects";
+    import { PaneGroup, Pane as PaneItem, PaneResizer } from 'paneforge';
 
     /*--------------------------------- Props --------------------------------*/
-
-    let items: NavItem[] = [
-        {
-            type: "button",
-            color: "transparent",
-            icon: FolderOpen,
-            label: "Open Project",
-            visibility: "desktop",
-            callback: () => {
-                $projectOverlay = true;
-            },
-        },
-        {
-            type: "button",
-            color: "transparent",
-            icon: Settings,
-            label: "Settings",
-            visibility: "desktop",
-            callback: () => {
-                $settingsOverlay = true;
-            },
-        },
-    ];
 
     /*-------------------------------- Methods -------------------------------*/
 
     /*------------------------------- Lifecycle ------------------------------*/
 
-    onMount(async () => {
-        // Show project picker if there isn't a pre-selected project
-        if ($activeProject === null) $projectOverlay = true;
-    });
+    let name = $state('');
+    let greetMsg = $state('');
+
+    async function greet(event: Event) {
+        event.preventDefault();
+        // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
+        greetMsg = await invoke('greet', { name });
+    }
 </script>
 
-<svelte:head>
-    <title>CViz</title>
-</svelte:head>
-
-<!-- Main Navigation -->
-<NavBar
-    title="CViz"
-    {logo}
-    logoLink="https://github.com/BOJIT/CViz"
-    themeOverride="dark"
-    {items}
-/>
-
-<!-- Interface here, active if there is a currently accessible project -->
-
-{#if $activeProject !== null}
-    <div class="graph-container">
-        <GraphView data={$graph} />
-        <div class="graph-overlay">
-            <GraphOverlay />
-        </div>
-        {#if $loadingOverlay}
-            <div class="progress-bar">
-                <ProgressLinear />
-            </div>
-        {/if}
-    </div>
-{/if}
-
-<StatusBar />
-
-<ProjectDialog bind:visible={$projectOverlay} />
-<SettingsDialog bind:visible={$settingsOverlay} />
-
-<KeyBindings />
+<main>
+    <PaneGroup direction="horizontal" class="p-1">
+        <PaneItem defaultSize={30} class="rounded-sm bg-accent">
+            <UI.Content>
+                <h4>Files</h4>
+                <hr />
+            </UI.Content>
+        </PaneItem>
+        <PaneResizer
+            class="relative flex w-1 items-center justify-center bg-background hover:bg-blue-400 active:bg-blue-400"
+        />
+        <PaneItem defaultSize={60} class="rounded-sm bg-transparent">
+        </PaneItem>
+        <PaneResizer
+            class="relative flex w-1 items-center justify-center bg-background hover:bg-blue-400 active:bg-blue-400"
+        />
+        <PaneItem defaultSize={30} class="rounded-sm bg-accent">
+            <UI.Content>
+                <h4>No Node Selected</h4>
+                <hr />
+            </UI.Content>
+        </PaneItem>
+    </PaneGroup>
+</main>
 
 <style>
-    :global(.app) {
-        height: 100vh !important;
-    }
-
-    .graph-container {
-        width: 100%;
-        height: calc(100vh - 3.8rem);
+    main {
+        flex: 2 0 auto;
         position: relative;
     }
 
-    .graph-overlay {
+    main > :global(div) {
         position: absolute;
         top: 0px;
         bottom: 0px;
         left: 0px;
         right: 0px;
-
-        pointer-events: none;
     }
 
-    .progress-bar {
-        position: absolute;
-        top: 0px;
-        bottom: 0px;
-        left: 0px;
-        right: 0px;
+    main :global(h6) {
+        font-weight: 200;
+        font-size: 0.85em;
+    }
 
-        background-color: rgba(12, 12, 12, 0.5);
+    h4 {
+        margin: 0px !important;
+        text-align: center;
+    }
+
+    hr {
+        margin-top: 0.4rem !important;
     }
 </style>

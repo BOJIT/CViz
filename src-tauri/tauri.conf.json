@@ -1,30 +1,15 @@
 {
+    "$schema": "https://schema.tauri.app/config/2",
+    "productName": "CViz",
+    "version": "0.1.0",
+    "identifier": "com.bojit.cviz",
     "build": {
         "beforeDevCommand": "npm run dev",
+        "devUrl": "http://localhost:1420",
         "beforeBuildCommand": "npm run build",
-        "devPath": "http://localhost:1420",
-        "distDir": "../build"
+        "frontendDist": "../build"
     },
-    "package": {
-        "productName": "CViz",
-        "version": "0.2.3"
-    },
-    "tauri": {
-        "allowlist": {
-            "all": false,
-            "shell": {
-                "all": false,
-                "open": true
-            },
-            "dialog": {
-                "all": false,
-                "ask": false,
-                "confirm": false,
-                "message": false,
-                "open": true,
-                "save": false
-            }
-        },
+    "app": {
         "windows": [
             {
                 "title": "CViz",
@@ -35,38 +20,36 @@
         ],
         "security": {
             "csp": null
-        },
+        }
+    },
+    "plugins": {
         "updater": {
             "active": true,
-            "endpoints": [
-                "https://github.com/BOJIT/CViz/releases/latest/download/latest.json"
-            ],
+            "endpoints": ["https://github.com/BOJIT/CViz/releases/latest/download/latest.json"],
             "dialog": true,
             "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEM0NDQ5MTQ5NzQyNDUyMjAKUldRZ1VpUjBTWkZFeE0xRGlBMnpNRGl2SkJTbjVIS3BwaUNRS1dLbnAvQ3hwNit5ZGVGaXNKQ1YK"
-        },
-        "bundle": {
-            "active": true,
-            "category": "DeveloperTool",
-            "targets": "all",
-            "identifier": "org.bojit.cviz",
-            "icon": [
-                "icons/128x128@2x.png",
-                "icons/128x128.png",
-                "icons/32x32.png",
-                "icons/icon.icns",
-                "icons/icon.ico",
-                "icons/icon.png",
-                "icons/Square107x107Logo.png",
-                "icons/Square142x142Logo.png",
-                "icons/Square150x150Logo.png",
-                "icons/Square284x284Logo.png",
-                "icons/Square30x30Logo.png",
-                "icons/Square310x310Logo.png",
-                "icons/Square44x44Logo.png",
-                "icons/Square71x71Logo.png",
-                "icons/Square89x89Logo.png",
-                "icons/StoreLogo.png"
-            ]
         }
+    },
+    "bundle": {
+        "active": true,
+        "targets": "all",
+        "icon": [
+            "icons/128x128@2x.png",
+            "icons/128x128.png",
+            "icons/32x32.png",
+            "icons/icon.icns",
+            "icons/icon.ico",
+            "icons/icon.png",
+            "icons/Square107x107Logo.png",
+            "icons/Square142x142Logo.png",
+            "icons/Square150x150Logo.png",
+            "icons/Square284x284Logo.png",
+            "icons/Square30x30Logo.png",
+            "icons/Square310x310Logo.png",
+            "icons/Square44x44Logo.png",
+            "icons/Square71x71Logo.png",
+            "icons/Square89x89Logo.png",
+            "icons/StoreLogo.png"
+        ]
     }
 }
